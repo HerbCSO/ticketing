@@ -1,9 +1,22 @@
 package org.dreesbach.ticketing;
 
-public class TicketServiceImpl implements TicketService {
+/**
+ * Default implementation of TicketService interface.
+ */
+final class TicketServiceImpl implements TicketService {
+    /**
+     * A seating arrangement passed into this class.
+     *
+     * Can be a simple arectangular arrangement, or more complex.
+     */
     private SeatingArrangement seatingArrangement;
 
-    public TicketServiceImpl(SeatingArrangement seatingArrangement) {
+    /**
+     * Default constructor.
+     *
+     * @param seatingArrangement an implementation of {@see SeatingArrangement}
+     */
+    TicketServiceImpl(final SeatingArrangement seatingArrangement) {
         this.seatingArrangement = seatingArrangement;
     }
 
@@ -13,12 +26,12 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public SeatHold findAndHoldSeats(int numSeats, String customerEmail) {
+    public SeatHold findAndHoldSeats(final int numSeats, final String customerEmail) {
         return new SeatHold();
     }
 
     @Override
-    public String reserveSeats(int seatHoldId, String customerEmail) {
+    public String reserveSeats(final int seatHoldId, final String customerEmail) {
         return null;
     }
 }
