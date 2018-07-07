@@ -25,7 +25,7 @@ class SeatHold {
      */
     SeatHold(final int numSeats, final String email) {
         this.numSeats = numSeats;
-        id = IdGenerator.generateUniqueId(email); // should be auto-generated and unique
+        id = IdGenerator.generateUniqueId(); // should be auto-generated and unique
     }
 
     /**
@@ -35,7 +35,6 @@ class SeatHold {
      */
     public int getNumSeats() {
         return numSeats;
-        // return numSeats;
     }
 
     /**
@@ -50,6 +49,5 @@ class SeatHold {
      */
     public int getId() {
         return id;
-        // return id;
     }
 }
