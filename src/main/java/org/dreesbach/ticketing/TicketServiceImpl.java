@@ -22,12 +22,13 @@ final class TicketServiceImpl implements TicketService {
 
     @Override
     public int numSeatsAvailable() {
-        return seatingArrangement.getNumSeats();
+        return seatingArrangement.getAvailableNumSeats();
     }
 
     @Override
     public SeatHold findAndHoldSeats(final int numSeats, final String customerEmail) {
-        return new SeatHold(numSeats, customerEmail);
+        int seatsAvailableToHold = seatingArrangement.reserveSeats(numSeats);
+        return new SeatHold(seatsAvailableToHold, customerEmail);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.dreesbach.ticketing;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,7 @@ class TicketServiceImplTest {
 
     @Test
     void allSeatsAvailable() {
-        assertEquals(defaultSeatingArrangement.getNumSeats(), ticketService.numSeatsAvailable(), "Should have all seats "
+        assertEquals(defaultSeatingArrangement.getTotalNumSeats(), ticketService.numSeatsAvailable(), "Should have all seats "
                 + "available");
     }
 
@@ -26,6 +27,22 @@ class TicketServiceImplTest {
         int numSeatsToHold = 2;
         SeatHold seatHold = ticketService.findAndHoldSeats(numSeatsToHold, "me@you.com");
         assertEquals(numSeatsToHold, seatHold.getNumSeats());
+    }
+
+    @Test
+    void seatHoldReducesAvailableSeatCount() {
+        int numSeatsToHold = 2;
+        SeatHold seatHold = ticketService.findAndHoldSeats(numSeatsToHold, "me@you.com");
+        assertEquals(defaultSeatingArrangement.getTotalNumSeats() - numSeatsToHold, ticketService.numSeatsAvailable(),
+                "Seat holds should reduce number of available seats");
+    }
+
+    @Test
+    void reserveMoreSeatsThanAreAvailable() {
+        SeatHold seatHold = ticketService.findAndHoldSeats(100_000, "me@you.com");
+        assertEquals(0, ticketService.numSeatsAvailable(), "Should have attempted to reserve all remaining seats");
+        assertEquals(seatHold.getNumSeats(), defaultSeatingArrangement.getTotalNumSeats(),
+                "Should only have reserved the total number of seats in existence at the location");
     }
 
     @Test

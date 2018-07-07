@@ -10,5 +10,20 @@ public interface SeatingArrangement {
      *
      * @return total number of seats
      */
-    int getNumSeats();
+    int getTotalNumSeats();
+
+    /**
+     * Return the available number of seats in the theatre.
+     *
+     * @return available number of seats
+     */
+    int getAvailableNumSeats();
+
+    /**
+     * Reserve a desired number of seats. Returns best available selection.
+     *
+     * @param numSeatsToReserve the number of seats desired
+     * @return number of seats available to reserve - may be 0 if none were available
+     */
+    int reserveSeats(int numSeatsToReserve);
 }
