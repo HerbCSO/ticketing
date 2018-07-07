@@ -1,5 +1,7 @@
 package org.dreesbach.ticketing;
 
+import org.dreesbach.ticketing.id.IdGenerator;
+
 /**
  * Class to coordinate holding of seats prior to actually reserving.
  */
@@ -19,10 +21,11 @@ class SeatHold {
      * Will auto-generate an ID.
      *
      * @param numSeats number of seats to hold
+     * @param email email address to hold for
      */
-    SeatHold(final int numSeats) {
+    SeatHold(final int numSeats, final String email) {
         this.numSeats = numSeats;
-        id = 1; // should be auto-generated and unique
+        id = IdGenerator.generateUniqueId(email); // should be auto-generated and unique
     }
 
     /**

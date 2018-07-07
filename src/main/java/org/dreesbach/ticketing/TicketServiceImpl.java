@@ -27,7 +27,7 @@ final class TicketServiceImpl implements TicketService {
 
     @Override
     public SeatHold findAndHoldSeats(final int numSeats, final String customerEmail) {
-        return new SeatHold(numSeats);
+        return new SeatHold(numSeats, customerEmail);
     }
 
     @Override
