@@ -1,9 +1,9 @@
 package org.dreesbach.ticketing.id;
 
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Implementation of the IdGenerator interface.
@@ -34,9 +34,9 @@ public final class IdGenerator {
      * @return a unique integer ID
      */
     public static int generateUniqueId() {
-        int randomNum = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE);
+        int randomNum = new SecureRandom().nextInt(Integer.MAX_VALUE);
         while (!IDS_IN_USE.add(randomNum)) {
-            randomNum = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE);
+            randomNum = new SecureRandom().nextInt(Integer.MAX_VALUE);
         }
         return randomNum;
     }
