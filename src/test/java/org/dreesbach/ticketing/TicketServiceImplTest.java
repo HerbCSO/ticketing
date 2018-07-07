@@ -23,14 +23,16 @@ class TicketServiceImplTest {
 
     @Test
     void findAndHoldSeats() {
-        SeatHold seatHold = ticketService.findAndHoldSeats(2, "me@you.com");
-        assertEquals(2, seatHold.getNumSeats());
+        int numSeatsToHold = 2;
+        SeatHold seatHold = ticketService.findAndHoldSeats(numSeatsToHold, "me@you.com");
+        assertEquals(numSeatsToHold, seatHold.getNumSeats());
     }
 
     @Test
     void reserveSeats() {
         String customerEmail = "me@you.com";
         SeatHold seatHold = ticketService.findAndHoldSeats(2, customerEmail);
-        ticketService.reserveSeats(seatHold.getId(), customerEmail);
+        String reservationCode = ticketService.reserveSeats(seatHold.getId(), customerEmail);
+        assertEquals("Reservation code", reservationCode, "Reservation code should match expected");
     }
 }

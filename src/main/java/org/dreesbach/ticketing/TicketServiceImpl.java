@@ -27,11 +27,11 @@ final class TicketServiceImpl implements TicketService {
 
     @Override
     public SeatHold findAndHoldSeats(final int numSeats, final String customerEmail) {
-        return new SeatHold();
+        return new SeatHold(numSeats);
     }
 
     @Override
     public String reserveSeats(final int seatHoldId, final String customerEmail) {
-        return null;
+        return "Reservation code";
     }
 }

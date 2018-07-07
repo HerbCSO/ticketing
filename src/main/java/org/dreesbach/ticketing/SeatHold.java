@@ -14,12 +14,24 @@ class SeatHold {
     private int id;
 
     /**
+     * Create a new SeatHold.
+     *
+     * Will auto-generate an ID.
+     *
+     * @param numSeats number of seats to hold
+     */
+    SeatHold(final int numSeats) {
+        this.numSeats = numSeats;
+        id = 1; // should be auto-generated and unique
+    }
+
+    /**
      * Number of seats held for this instance.
      *
      * @return number of seats held
      */
     public int getNumSeats() {
-        return 2;
+        return numSeats;
         // return numSeats;
     }
 
@@ -34,7 +46,7 @@ class SeatHold {
      * @return unique ID of the seat hold
      */
     public int getId() {
-        return 1;
+        return id;
         // return id;
     }
 }
