@@ -14,7 +14,7 @@ final class TicketServiceImpl implements TicketService {
     /**
      * Default constructor.
      *
-     * @param seatingArrangement an implementation of {@see SeatingArrangement}
+     * @param seatingArrangement an implementation of {@link SeatingArrangement}
      */
     TicketServiceImpl(final SeatingArrangement seatingArrangement) {
         this.seatingArrangement = seatingArrangement;
