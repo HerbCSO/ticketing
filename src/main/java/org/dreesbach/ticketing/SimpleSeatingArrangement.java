@@ -48,6 +48,7 @@ final class SimpleSeatingArrangement implements SeatingArrangement {
             for (int col = 0; col < seats[row].length; col++) {
                 // we set seat IDs to be 1-indexed for normal human consumption
                 seats[row][col] = new SeatImpl(String.format("Row %d Seat %d", row + 1, col + 1));
+                // TODO: set seat "value" to identify best to worst seats here
             }
         }
     }
@@ -90,7 +91,7 @@ final class SimpleSeatingArrangement implements SeatingArrangement {
      *
      * In the long run this should use a configurable best seat selection strategy.
      *
-     * Note: simplest possible initial implementation for now, this is stupidly inefficient, does not return the best seats
+     * TODO: simplest possible initial implementation for now, this is stupidly inefficient, does not return the best seats
      * yet (only first available), and should be redesigned to work much faster - maybe using a priority queue sorted by best
      * to worst seat?
      *
