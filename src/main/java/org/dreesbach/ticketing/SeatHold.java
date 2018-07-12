@@ -4,49 +4,54 @@ import org.dreesbach.ticketing.id.IdGenerator;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class to coordinate holding of seats prior to actually reserving.
  */
 class SeatHold {
-    /**
-     * How long the seat hold is kept before expiring.
-     */
+    /** How long the seat hold is kept before expiring. */
     private static final Duration SEAT_HOLD_EXPIRATION_TIME = Duration.ofMinutes(5);
-    /**
-     * The expiration time of this {@code SeatHold}.
-     */
+    /** The location in which seats are being held. */
+    private final SeatingArrangement seatingArrangement;
+    /** The expiration time of this {@code SeatHold}. */
     private Instant expirationTime;
-    /**
-     * Number of seats to hold for reservation.
-     */
-    private int numSeats;
-    /**
-     * Unique ID of the seat hold.
-     */
+    /** Number of seats to hold for reservation. */
+    private int numSeatsRequested;
+    /** The number of seats actually held. */
+    private int numSeatsHeld;
+    /** Unique ID of the seat hold. */
     private int id;
+    /** List of seats held. */
+    private List<Seat> seatsHeld;
 
     /**
      * Create a new SeatHold.
      *
      * Will auto-generate an ID.
      *
-     * @param numSeats number of seats to hold
+     * @param numSeatsRequested number of seats to hold
+     * @param seatingArrangement the location to hold seats in
      */
-    SeatHold(final int numSeats) {
-        this(numSeats, SEAT_HOLD_EXPIRATION_TIME);
+    SeatHold(final int numSeatsRequested, final SeatingArrangement seatingArrangement) {
+        this(numSeatsRequested, seatingArrangement, SEAT_HOLD_EXPIRATION_TIME);
     }
 
     /**
      * Create a new SeatHold with the specified expiration time.
      *
-     * @param numSeats number of seats to hold
+     * @param numSeatsRequested number of seats to hold
+     * @param seatingArrangement the location to hold seats in
      * @param seatHoldExpirationTime duration until the {@code SeatHold} expires
      */
-    SeatHold(final int numSeats, final Duration seatHoldExpirationTime) {
-        this.numSeats = numSeats;
+    SeatHold(final int numSeatsRequested, final SeatingArrangement seatingArrangement, final Duration seatHoldExpirationTime) {
+        this.numSeatsRequested = numSeatsRequested;
+        this.seatingArrangement = seatingArrangement;
         id = IdGenerator.generateUniqueId(); // should be auto-generated and unique
         expirationTime = Instant.now().plus(seatHoldExpirationTime);
+        seatsHeld = this.seatingArrangement.holdSeats(numSeatsRequested);
+        numSeatsHeld = seatsHeld.size();
     }
 
     /**
@@ -54,12 +59,30 @@ class SeatHold {
      *
      * @return number of seats held
      */
-    public int getNumSeats() {
-        return numSeats;
+    public int getNumSeatsHeld() {
+        return numSeatsHeld;
     }
 
     /**
-     * Unique integer ID for the seat hold
+     * Get the actual seats held by this.
+     *
+     * @return a list of @{link Seat}s
+     */
+    public List<Seat> getSeatsHeld() {
+        return Collections.unmodifiableList(seatsHeld);
+    }
+
+    /**
+     * Number of seats requested for this instance.
+     *
+     * @return number of seats requested
+     */
+    public int getNumSeatsRequested() {
+        return numSeatsRequested;
+    }
+
+    /**
+     * Unique integer ID for the seat hold.
      *
      * Note: I would prefer to do this as a UUID in order to prevent potentially leaking this information out and making it
      * guessable, thus potentially enabling someone to get somebody else's seat hold (although they'd need to know their
@@ -89,6 +112,7 @@ class SeatHold {
         if (expirationTime.isAfter(Instant.now())) {
             expirationTime = Instant.now();
         }
-        numSeats = 0;
+        numSeatsHeld = 0;
+        seatsHeld = null;
     }
 }

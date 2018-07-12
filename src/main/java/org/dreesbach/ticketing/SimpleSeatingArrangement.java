@@ -83,13 +83,13 @@ final class SimpleSeatingArrangement implements SeatingArrangement {
      * @param numSeatsToHold the number of seats to be reserved
      * @return the actual number of seats that could be reserved - could be less than what was requested, all the way down to 0
      */
-    public synchronized int holdSeats(final int numSeatsToHold) {
+    public synchronized List<Seat> holdSeats(final int numSeatsToHold) {
         List<Seat> bestSeats = seatPickingStrategy.pickBestAvailableSeats(this, numSeatsToHold);
         for (Seat seat : bestSeats) {
             seat.hold();
         }
         availableNumSeats = availableNumSeats - bestSeats.size();
-        return bestSeats.size();
+        return bestSeats;
     }
 
     @Override
