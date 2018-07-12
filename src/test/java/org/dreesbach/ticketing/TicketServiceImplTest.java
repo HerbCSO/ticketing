@@ -42,7 +42,7 @@ class TicketServiceImplTest {
     void tryToHoldMoreSeatsAfterNoneAvailable() {
         ticketService.findAndHoldSeats(1_000_000, CUSTOMER_EMAIL);
         SeatHold noneLeft = ticketService.findAndHoldSeats(2, CUSTOMER_EMAIL);
-        assertEquals(null, noneLeft);
+        assertEquals(0, noneLeft.getNumSeatsHeld(), "Should have no seats held");
     }
 
     @Test

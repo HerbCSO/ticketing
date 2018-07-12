@@ -91,21 +91,6 @@ final class TicketServiceImpl implements TicketService {
     public synchronized SeatHold findAndHoldSeats(final int numSeats, final String customerEmail) {
         // TODO: delegate this to SeatingArrangement?
         SeatHold seatHold = new SeatHold(numSeats, seatingArrangement, seatHoldExpirationTime);
-        int seatsAvailableToHold = seatHold.getNumSeatsHeld();
-        if (seatsAvailableToHold == 0) {
-            /*
-                I am choosing to return null here, which of course places a burden of null-checking on the calling code.
-                However this means that there is no further memory/processing load on this code, so that is an optimization
-                I'm making here.
-                Another option would be to throw an exception, but since it is a regular occurrence that there will be no
-                seats available, throwing and processing that exception will be costly in a high-demand environment.
-                Lastly, I could return a SeatHold with 0 seats, however in that case it's another object to allocate and
-                track, so I'm opting for the client code having to null-check instead.
-
-                TODO: Change this to return Optional<SeatHold> instead
-             */
-            return null;
-        }
         if (!seatHolds.offer(seatHold)) {
             throw new IllegalStateException("Somehow more seats were allocated than the venue can hold - this should never "
                     + "happen and must be investigated");

@@ -47,9 +47,12 @@ class SeatHold {
      */
     SeatHold(final int numSeatsRequested, final SeatingArrangement seatingArrangement, final Duration seatHoldExpirationTime) {
         this.numSeatsRequested = numSeatsRequested;
+        // TODO: Do I really need to hold on to this here?
         this.seatingArrangement = seatingArrangement;
-        id = IdGenerator.generateUniqueId(); // should be auto-generated and unique
+        id = IdGenerator.generateUniqueId();
         expirationTime = Instant.now().plus(seatHoldExpirationTime);
+        // TODO: This was possibly a stupid decision - maybe I should invert the relationship and make SeatHold be instantiated
+        // by SeatingArrangement instead?
         seatsHeld = this.seatingArrangement.holdSeats(numSeatsRequested);
         numSeatsHeld = seatsHeld.size();
     }
