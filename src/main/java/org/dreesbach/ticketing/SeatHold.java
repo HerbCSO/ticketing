@@ -2,10 +2,21 @@ package org.dreesbach.ticketing;
 
 import org.dreesbach.ticketing.id.IdGenerator;
 
+import java.time.Duration;
+import java.time.Instant;
+
 /**
  * Class to coordinate holding of seats prior to actually reserving.
  */
 class SeatHold {
+    /**
+     * How long the seat hold is kept before expiring.
+     */
+    private static final Duration SEAT_HOLD_EXPIRATION_TIME = Duration.ofMinutes(5);
+    /**
+     * The expiration time of this {@code SeatHold}.
+     */
+    private Instant expirationTime;
     /**
      * Number of seats to hold for reservation.
      */
@@ -21,11 +32,21 @@ class SeatHold {
      * Will auto-generate an ID.
      *
      * @param numSeats number of seats to hold
-     * @param email email address to hold for
      */
-    SeatHold(final int numSeats, final String email) {
+    SeatHold(final int numSeats) {
+        this(numSeats, SEAT_HOLD_EXPIRATION_TIME);
+    }
+
+    /**
+     * Create a new SeatHold with the specified expiration time.
+     *
+     * @param numSeats number of seats to hold
+     * @param seatHoldExpirationTime duration until the {@code SeatHold} expires
+     */
+    SeatHold(final int numSeats, final Duration seatHoldExpirationTime) {
         this.numSeats = numSeats;
         id = IdGenerator.generateUniqueId(); // should be auto-generated and unique
+        expirationTime = Instant.now().plus(seatHoldExpirationTime);
     }
 
     /**
@@ -49,5 +70,25 @@ class SeatHold {
      */
     public int getId() {
         return id;
+    }
+
+    /**
+     * Whether this {@code SeatHold} has expired.
+     *
+     * @return true if it is after the expiration time
+     */
+    public boolean expired() {
+        return Instant.now().isAfter(expirationTime) || Instant.now().equals(expirationTime);
+    }
+
+    /**
+     * Remove this {@code SeatHold}.
+     */
+    public void remove() {
+        IdGenerator.retireId(getId());
+        if (expirationTime.isAfter(Instant.now())) {
+            expirationTime = Instant.now();
+        }
+        numSeats = 0;
     }
 }
