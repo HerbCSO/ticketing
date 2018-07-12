@@ -77,16 +77,16 @@ final class SimpleSeatingArrangement implements SeatingArrangement {
     /**
      * Reserve seats in the location.
      * <p>
-     * This method is synchronized to ensure only one thread at a time can reserve seats. This may end up being a bottleneck
+     * This method is synchronized to ensure only one thread at a time can hold seats. This may end up being a bottleneck
      * later on, something to watch out for in a multi-threaded web server environment, for example.
      *
-     * @param numSeatsToReserve the number of seats to be reserved
+     * @param numSeatsToHold the number of seats to be reserved
      * @return the actual number of seats that could be reserved - could be less than what was requested, all the way down to 0
      */
-    public synchronized int reserveSeats(final int numSeatsToReserve) {
-        List<Seat> bestSeats = seatPickingStrategy.pickBestAvailableSeats(this, numSeatsToReserve);
+    public synchronized int holdSeats(final int numSeatsToHold) {
+        List<Seat> bestSeats = seatPickingStrategy.pickBestAvailableSeats(this, numSeatsToHold);
         for (Seat seat : bestSeats) {
-            seat.reserve();
+            seat.hold();
         }
         availableNumSeats = availableNumSeats - bestSeats.size();
         return bestSeats.size();

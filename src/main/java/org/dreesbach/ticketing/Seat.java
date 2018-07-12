@@ -12,19 +12,36 @@ public interface Seat {
     String getId();
 
     /**
-     * Whether this seat is available or not.
+     * Whether this seat is available for holding or not.
      *
-     * @return true if it available
+     * @return true if it is available
      */
     boolean isAvailable();
 
     /**
-     * Reserve this seat.
+     * Whether this seat is reserved or not.
+     *
+     * @return true if it is reserved
+     */
+    boolean isReserved();
+
+    /**
+     * Hold this seat.
+     */
+    void hold();
+
+    /**
+     * Release this seat from a previous hold.
+     */
+    void cancelHold();
+
+    /**
+     * Actually reserve this seat.
      */
     void reserve();
 
     /**
-     * Release this seat from a previous reservation.
+     * Cancel a previous reservation, making the seat available again.
      */
-    void release();
+    void cancelReservation();
 }
