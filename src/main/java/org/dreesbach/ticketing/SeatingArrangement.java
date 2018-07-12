@@ -26,4 +26,11 @@ public interface SeatingArrangement {
      * @return number of seats available to reserve - may be 0 if none were available
      */
     int reserveSeats(int numSeatsToReserve);
+
+    /**
+     * Set a strategy for selecting the best seats.
+     *
+     * @param seatPickingStrategy the strategy to use
+     */
+    void setSeatPickingStrategy(SeatPickingStrategy seatPickingStrategy);
 }

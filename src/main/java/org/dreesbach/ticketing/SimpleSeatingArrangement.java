@@ -1,6 +1,5 @@
 package org.dreesbach.ticketing;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,19 +22,26 @@ final class SimpleSeatingArrangement implements SeatingArrangement {
      * A two-dimensional array for the seats at the venue. A simplistic implementation for this simplistic seating setup.
      */
     private Seat[][] seats;
+    /**
+     * The seat picking strategy to use.
+     */
+    private SeatPickingStrategy seatPickingStrategy;
 
     /**
      * Creates a new instance.
      *
      * @param numRows number of seat rows in this location
      * @param seatsPerRow number of seats per row - same for all rows in this simple arrangement
+     * @param seatPickingStrategy the strategy for picking the best seats
      */
-    SimpleSeatingArrangement(final int numRows, final int seatsPerRow) {
+    SimpleSeatingArrangement(final int numRows, final int seatsPerRow,
+                             final SeatPickingStrategy<SimpleSeatingArrangement> seatPickingStrategy) {
         this.numRows = numRows;
         this.seatsPerRow = seatsPerRow;
         availableNumSeats = getTotalNumSeats();
         seats = new Seat[numRows][seatsPerRow];
         fillSeats(seats);
+        setSeatPickingStrategy(seatPickingStrategy);
     }
 
     /**
@@ -78,7 +84,7 @@ final class SimpleSeatingArrangement implements SeatingArrangement {
      * @return the actual number of seats that could be reserved - could be less than what was requested, all the way down to 0
      */
     public synchronized int reserveSeats(final int numSeatsToReserve) {
-        List<Seat> bestSeats = pickBestAvailableSeats(numSeatsToReserve);
+        List<Seat> bestSeats = seatPickingStrategy.pickBestAvailableSeats(this, numSeatsToReserve);
         for (Seat seat : bestSeats) {
             seat.reserve();
         }
@@ -86,32 +92,17 @@ final class SimpleSeatingArrangement implements SeatingArrangement {
         return bestSeats.size();
     }
 
+    @Override
+    public void setSeatPickingStrategy(final SeatPickingStrategy seatPickingStrategy) {
+        this.seatPickingStrategy = seatPickingStrategy;
+    }
+
     /**
-     * Go through the available seats and return the best ones.
+     * Get the seats for this location.
      *
-     * In the long run this should use a configurable best seat selection strategy.
-     *
-     * TODO: simplest possible initial implementation for now, this is stupidly inefficient, does not return the best seats
-     * yet (only first available), and should be redesigned to work much faster - maybe using a priority queue sorted by best
-     * to worst seat?
-     *
-     * @param numSeatsToPick number of seats to pick for reservation
-     * @return an array of available {@link Seat}s in the best locations
+     * @return two-dimensional array of seats by row/column
      */
-    List<Seat> pickBestAvailableSeats(final int numSeatsToPick) {
-        int seatsPicked = 0;
-        List<Seat> bestSeats = new ArrayList<>();
-        for (int row = 0; row < seats.length; row++) {
-            for (int col = 0; col < seats[row].length; col++) {
-                if (seats[row][col].isAvailable()) {
-                    seatsPicked++;
-                    bestSeats.add(seats[row][col]);
-                    if (seatsPicked == numSeatsToPick) {
-                        return bestSeats;
-                    }
-                }
-            }
-        }
-        return bestSeats;
+    public Seat[][] getSeats() {
+        return seats;
     }
 }

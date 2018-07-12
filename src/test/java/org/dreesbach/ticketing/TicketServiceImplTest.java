@@ -15,7 +15,9 @@ class TicketServiceImplTest {
 
     @BeforeEach
     public void setup() {
-        this.defaultSeatingArrangement = new SimpleSeatingArrangement(3,3);
+        SeatPickingStrategy<SimpleSeatingArrangement> seatPickingStrategy =
+                new SimpleSeatingArrangementSimpleSeatPickingStrategy();
+        this.defaultSeatingArrangement = new SimpleSeatingArrangement(3, 3, seatPickingStrategy);
         this.ticketService = new TicketServiceImpl(defaultSeatingArrangement);
     }
 
