@@ -1,10 +1,10 @@
 package org.dreesbach.ticketing;
 
+import com.google.common.collect.ImmutableList;
 import org.dreesbach.ticketing.id.IdGenerator;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -72,7 +72,7 @@ class SeatHold {
      * @return a list of @{link Seat}s
      */
     public List<Seat> getSeatsHeld() {
-        return Collections.unmodifiableList(seatsHeld);
+        return ImmutableList.copyOf(seatsHeld);
     }
 
     /**
