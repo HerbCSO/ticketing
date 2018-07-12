@@ -2,12 +2,13 @@ package org.dreesbach.ticketing.id;
 
 import org.junit.jupiter.api.Test;
 
-import java.text.NumberFormat;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.number.OrderingComparison.lessThan;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IdGeneratorTest {
     @Test
@@ -33,9 +34,13 @@ class IdGeneratorTest {
         // quick to run and hopefully any reasonably recent computer should be able to hit this target. It's important that
         // this can execute quickly to ensure that ID generation does not become a bottleneck in the high-demand environments
         // this will be used in.
-        assertThat("Should run in under 1 second", System.currentTimeMillis() - start, lessThan(1_000L));
-        assertEquals(200_000, IdGenerator.numUniqueIds() - numIdsAtStart,
-                "Should have the full number of IDs in use");
+        assertThat(
+                "Should run in under 1 second - note: may vary per machine! If you have problems with this test sporadically "
+                        + "failing, come talk to Carsten and we can find a better solution.",
+                System.currentTimeMillis() - start,
+                lessThan(1_000L)
+        );
+        assertEquals(200_000, IdGenerator.numUniqueIds() - numIdsAtStart, "Should have the full number of IDs in use");
     }
 
     @Test
