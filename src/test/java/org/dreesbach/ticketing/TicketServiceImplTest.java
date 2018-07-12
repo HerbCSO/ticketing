@@ -11,21 +11,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TicketServiceImplTest {
     private static final String CUSTOMER_EMAIL = "me@you.com";
-    private SeatingArrangement defaultSeatingArrangement;
+    private Venue defaultVenue;
     private TicketService ticketService;
 
     @BeforeEach
     public void setup() {
-        SeatPickingStrategy<SimpleSeatingArrangement> seatPickingStrategy =
-                new SimpleSeatingArrangementSimpleSeatPickingStrategy();
-        this.defaultSeatingArrangement = new SimpleSeatingArrangement(3, 3, seatPickingStrategy);
-        this.ticketService = new TicketServiceImpl(defaultSeatingArrangement);
+        SeatPickingStrategy<RectangularVenue> seatPickingStrategy =
+                new RectangularVenueSimpleSeatPickingStrategy();
+        this.defaultVenue = new RectangularVenue(3, 3, seatPickingStrategy);
+        this.ticketService = new TicketServiceImpl(defaultVenue);
     }
 
     @Test
     void allSeatsAvailable() {
         assertEquals(
-                defaultSeatingArrangement.getTotalNumSeats(),
+                defaultVenue.getTotalNumSeats(),
                 ticketService.numSeatsAvailable(),
                 "Should have all seats " + "available"
         );
@@ -49,7 +49,8 @@ class TicketServiceImplTest {
     void seatHoldReducesAvailableSeatCount() {
         int numSeatsToHold = 2;
         SeatHold seatHold = ticketService.findAndHoldSeats(numSeatsToHold, CUSTOMER_EMAIL);
-        assertEquals(defaultSeatingArrangement.getTotalNumSeats() - numSeatsToHold,
+        assertEquals(
+                defaultVenue.getTotalNumSeats() - numSeatsToHold,
                 ticketService.numSeatsAvailable(),
                 "Seat holds should reduce number of available seats"
         );
@@ -60,7 +61,7 @@ class TicketServiceImplTest {
         SeatHold seatHold = ticketService.findAndHoldSeats(100_000, CUSTOMER_EMAIL);
         assertEquals(0, ticketService.numSeatsAvailable(), "Should have attempted to hold all remaining seats");
         assertEquals(seatHold.getNumSeatsHeld(),
-                defaultSeatingArrangement.getTotalNumSeats(),
+                defaultVenue.getTotalNumSeats(),
                 "Should only have reserved the total number of seats in existence at the location"
         );
     }
@@ -77,7 +78,7 @@ class TicketServiceImplTest {
     @Test
     void ensureSeatHoldsExpire() throws InterruptedException {
         TicketService ticketServiceWithImmediateExpiration =
-                new TicketServiceImpl(defaultSeatingArrangement, 1L, Duration.ZERO);
+                new TicketServiceImpl(defaultVenue, 1L, Duration.ZERO);
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertTrue(seatHold.expired(), "SeatHold should expire immediately");
         Thread.sleep(10L); // Ensure that the #expireSeatHolds method has had time to run
@@ -91,7 +92,7 @@ class TicketServiceImplTest {
     void ensureSeatHoldsDoNotExpireTooSoon() throws InterruptedException {
         final int numSeats = 2;
         TicketService ticketServiceWithSlowExpiration =
-                new TicketServiceImpl(defaultSeatingArrangement, 1L, Duration.ofDays(1));
+                new TicketServiceImpl(defaultVenue, 1L, Duration.ofDays(1));
         SeatHold seatHold = ticketServiceWithSlowExpiration.findAndHoldSeats(numSeats, CUSTOMER_EMAIL);
         assertFalse(seatHold.expired(), "SeatHold should not be expired yet");
         // TODO: replace this with a spy to ensure that expireSeatHolds has run at least once - timing-dependent tests suck!

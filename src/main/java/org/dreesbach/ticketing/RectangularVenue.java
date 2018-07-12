@@ -3,9 +3,9 @@ package org.dreesbach.ticketing;
 import java.util.List;
 
 /**
- * A simple {@link SeatingArrangement} implementation that provides a rectangular arrangement of seats.
+ * A simple {@link Venue} implementation that provides a rectangular arrangement of seats.
  */
-final class SimpleSeatingArrangement implements SeatingArrangement {
+final class RectangularVenue implements Venue {
     /**
      * Number of rows in the location.
      */
@@ -34,8 +34,8 @@ final class SimpleSeatingArrangement implements SeatingArrangement {
      * @param seatsPerRow number of seats per row - same for all rows in this simple arrangement
      * @param seatPickingStrategy the strategy for picking the best seats
      */
-    SimpleSeatingArrangement(final int numRows, final int seatsPerRow,
-                             final SeatPickingStrategy<SimpleSeatingArrangement> seatPickingStrategy) {
+    RectangularVenue(final int numRows, final int seatsPerRow,
+                     final SeatPickingStrategy<RectangularVenue> seatPickingStrategy) {
         this.numRows = numRows;
         this.seatsPerRow = seatsPerRow;
         availableNumSeats = getTotalNumSeats();

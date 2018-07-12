@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A seat picking strategy for a simple seating arrangement.
+ * A seat picking strategy for a retangular venue.
  */
-public class SimpleSeatingArrangementSimpleSeatPickingStrategy implements SeatPickingStrategy<SimpleSeatingArrangement> {
+public class RectangularVenueSimpleSeatPickingStrategy implements SeatPickingStrategy<RectangularVenue> {
     /**
      * Go through the available seats and return the best ones.
      *
@@ -18,11 +18,11 @@ public class SimpleSeatingArrangementSimpleSeatPickingStrategy implements SeatPi
      * @return an array of available {@link Seat}s in the best locations
      */
     @Override
-    public final List<Seat> pickBestAvailableSeats(final SimpleSeatingArrangement seatingArrangement,
+    public final List<Seat> pickBestAvailableSeats(final RectangularVenue venue,
                                                    final int numSeatsToPick) {
         int seatsPicked = 0;
         List<Seat> bestSeats = new ArrayList<>();
-        Seat[][] seats = seatingArrangement.getSeats();
+        Seat[][] seats = venue.getSeats();
         for (int row = 0; row < seats.length; row++) {
             for (int col = 0; col < seats[row].length; col++) {
                 if (seats[row][col].isAvailable()) {

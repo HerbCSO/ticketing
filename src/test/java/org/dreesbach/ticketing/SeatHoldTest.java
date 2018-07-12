@@ -14,27 +14,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SeatHoldTest {
 
-    private SimpleSeatingArrangement seatingArrangement;
+    private RectangularVenue venue;
 
     @BeforeEach
     void setUp() {
-        SeatPickingStrategy<SimpleSeatingArrangement> seatPickingStrategy =
-                new SimpleSeatingArrangementSimpleSeatPickingStrategy();
-        seatingArrangement = new SimpleSeatingArrangement(3, 3, seatPickingStrategy);
+        SeatPickingStrategy<RectangularVenue> seatPickingStrategy =
+                new RectangularVenueSimpleSeatPickingStrategy();
+        venue = new RectangularVenue(3, 3, seatPickingStrategy);
     }
 
     @Test
     void getNumSeats() {
         int numSeats = 2;
-        SeatHold seatHold = new SeatHold(2, seatingArrangement);
+        SeatHold seatHold = new SeatHold(2, venue);
         assertEquals(numSeats, seatHold.getNumSeatsHeld(), "Number of seats held should equal requested seats");
     }
 
     @Test
     void requestMoreSeatsThanAvailable() {
-        SeatHold seatHold = new SeatHold(1_000_000, seatingArrangement);
+        SeatHold seatHold = new SeatHold(1_000_000, venue);
         assertEquals(
-                seatingArrangement.getTotalNumSeats(),
+                venue.getTotalNumSeats(),
                 seatHold.getNumSeatsHeld(),
                 "Number of seats held should equal " + "total number of seats in the location"
         );
@@ -42,19 +42,19 @@ class SeatHoldTest {
 
     @Test
     void getId() {
-        SeatHold seatHold = new SeatHold(2, seatingArrangement);
+        SeatHold seatHold = new SeatHold(2, venue);
         assertThat("Generated ID should be > 0", seatHold.getId(), greaterThan(0));
     }
 
     @Test
     void expired() {
-        SeatHold seatHold = new SeatHold(2, seatingArrangement, Duration.ZERO);
+        SeatHold seatHold = new SeatHold(2, venue, Duration.ZERO);
         assertTrue(seatHold.expired(), "SeatHold should be expired immediately");
     }
 
     @Test
     void remove() {
-        SeatHold seatHold = new SeatHold(2, seatingArrangement);
+        SeatHold seatHold = new SeatHold(2, venue);
         int id = seatHold.getId();
         seatHold.remove();
         assertTrue(seatHold.expired(), "Removed SeatHold should be expired immediately");

@@ -12,7 +12,7 @@ public final class SeatImpl implements Seat {
      * The identifier for the seat, e.g. K15, 203, 1A, whatever.
      * <p>
      * Should be unique for each seat in the locale in order to enable identification of seats, however this is not enforced in
-     * this implementation, it is left up to the {@link SeatingArrangement} to manage that.
+     * this implementation, it is left up to the {@link Venue} to manage that.
      */
     private final String id;
     /**

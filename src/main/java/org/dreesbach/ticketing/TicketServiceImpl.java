@@ -25,11 +25,11 @@ final class TicketServiceImpl implements TicketService {
      */
     private final Duration seatHoldExpirationTime;
     /**
-     * A seating arrangement passed into this class.
+     * A venue passed into this class.
      * <p>
      * Can be a simple rectangular arrangement, or more complex.
      */
-    private SeatingArrangement seatingArrangement;
+    private Venue venue;
     /**
      * List of all the seat holds.
      */
@@ -43,27 +43,27 @@ final class TicketServiceImpl implements TicketService {
     /**
      * Default constructor.
      *
-     * @param seatingArrangement an implementation of {@link SeatingArrangement}
+     * @param venue an implementation of {@link Venue}
      */
-    TicketServiceImpl(final SeatingArrangement seatingArrangement) {
-        this(seatingArrangement, CHECK_SEAT_HOLD_EXPIRATION_MILLISECONDS, DEFAULT_SEAT_HOLD_EXPIRATION_TIME);
+    TicketServiceImpl(final Venue venue) {
+        this(venue, CHECK_SEAT_HOLD_EXPIRATION_MILLISECONDS, DEFAULT_SEAT_HOLD_EXPIRATION_TIME);
     }
 
     /**
      * Constructor allowing specification of seat hold expiration time.
      *
-     * @param seatingArrangement an implementation of {@link SeatingArrangement}
+     * @param venue an implementation of {@link Venue}
      * @param seatHoldCheckExpirationMilliseconds how often we should check for seat hold expiration
      * @param seatHoldExpirationTime how long until a {@link SeatHold} expires
      */
     TicketServiceImpl(
-            final SeatingArrangement seatingArrangement,
+            final Venue venue,
             final long seatHoldCheckExpirationMilliseconds,
             final Duration seatHoldExpirationTime
     ) {
-        this.seatingArrangement = seatingArrangement;
+        this.venue = venue;
         this.seatHoldExpirationTime = seatHoldExpirationTime;
-        seatHolds = new ArrayBlockingQueue<>(seatingArrangement.getTotalNumSeats());
+        seatHolds = new ArrayBlockingQueue<>(venue.getTotalNumSeats());
         // We don't want executions to pile up, so we use scheduleWithFixedDelay rather than scheduleAtFixedRate
         seatHoldExpiration.scheduleWithFixedDelay(this::expireSeatHolds,
                 0L,
@@ -74,7 +74,7 @@ final class TicketServiceImpl implements TicketService {
 
     @Override
     public int numSeatsAvailable() {
-        return seatingArrangement.getAvailableNumSeats();
+        return venue.getAvailableNumSeats();
     }
 
     /**
@@ -89,8 +89,8 @@ final class TicketServiceImpl implements TicketService {
      */
     @Override
     public synchronized SeatHold findAndHoldSeats(final int numSeats, final String customerEmail) {
-        // TODO: delegate this to SeatingArrangement?
-        SeatHold seatHold = new SeatHold(numSeats, seatingArrangement, seatHoldExpirationTime);
+        // TODO: delegate this to Venue?
+        SeatHold seatHold = new SeatHold(numSeats, venue, seatHoldExpirationTime);
         if (!seatHolds.offer(seatHold)) {
             throw new IllegalStateException("Somehow more seats were allocated than the venue can hold - this should never "
                     + "happen and must be investigated");

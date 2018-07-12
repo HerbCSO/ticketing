@@ -3,10 +3,10 @@ package org.dreesbach.ticketing;
 import java.util.List;
 
 /**
- * Provides access to various SeatingArrangement implementations. Can take into account various location arrangements and
+ * Provides access to various Venue implementations. Can take into account various location arrangements and
  * could be extended to provide various "best seats" algorithms.
  */
-public interface SeatingArrangement {
+public interface Venue {
     /**
      * Return the total number of seats in the theatre.
      *

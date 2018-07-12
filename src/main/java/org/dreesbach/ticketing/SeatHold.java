@@ -14,7 +14,7 @@ class SeatHold {
     /** How long the seat hold is kept before expiring. */
     private static final Duration SEAT_HOLD_EXPIRATION_TIME = Duration.ofMinutes(5);
     /** The location in which seats are being held. */
-    private final SeatingArrangement seatingArrangement;
+    private final Venue venue;
     /** The expiration time of this {@code SeatHold}. */
     private Instant expirationTime;
     /** Number of seats to hold for reservation. */
@@ -32,28 +32,28 @@ class SeatHold {
      * Will auto-generate an ID.
      *
      * @param numSeatsRequested number of seats to hold
-     * @param seatingArrangement the location to hold seats in
+     * @param venue the location to hold seats in
      */
-    SeatHold(final int numSeatsRequested, final SeatingArrangement seatingArrangement) {
-        this(numSeatsRequested, seatingArrangement, SEAT_HOLD_EXPIRATION_TIME);
+    SeatHold(final int numSeatsRequested, final Venue venue) {
+        this(numSeatsRequested, venue, SEAT_HOLD_EXPIRATION_TIME);
     }
 
     /**
      * Create a new SeatHold with the specified expiration time.
      *
      * @param numSeatsRequested number of seats to hold
-     * @param seatingArrangement the location to hold seats in
+     * @param venue the location to hold seats in
      * @param seatHoldExpirationTime duration until the {@code SeatHold} expires
      */
-    SeatHold(final int numSeatsRequested, final SeatingArrangement seatingArrangement, final Duration seatHoldExpirationTime) {
+    SeatHold(final int numSeatsRequested, final Venue venue, final Duration seatHoldExpirationTime) {
         this.numSeatsRequested = numSeatsRequested;
         // TODO: Do I really need to hold on to this here?
-        this.seatingArrangement = seatingArrangement;
+        this.venue = venue;
         id = IdGenerator.generateUniqueId();
         expirationTime = Instant.now().plus(seatHoldExpirationTime);
         // TODO: This was possibly a stupid decision - maybe I should invert the relationship and make SeatHold be instantiated
-        // by SeatingArrangement instead?
-        seatsHeld = this.seatingArrangement.holdSeats(numSeatsRequested);
+        // by Venue instead?
+        seatsHeld = this.venue.holdSeats(numSeatsRequested);
         numSeatsHeld = seatsHeld.size();
     }
 
