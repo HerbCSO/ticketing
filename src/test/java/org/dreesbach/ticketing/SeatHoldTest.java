@@ -54,8 +54,9 @@ class SeatHoldTest {
     }
 
     @Test
-    void expired() {
+    void expired() throws InterruptedException {
         SeatHold seatHold = new SeatHold(2, venue, Duration.ZERO);
+        Thread.sleep(10L); // the test fails intermittently without this, since the expiration happens in a separate thread
         assertTrue(seatHold.expired(), "SeatHold should be expired immediately");
     }
 
