@@ -8,6 +8,7 @@ import java.time.Duration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,8 +19,7 @@ class SeatHoldTest {
 
     @BeforeEach
     void setUp() {
-        SeatPickingStrategy<RectangularVenue> seatPickingStrategy =
-                new RectangularVenueSimpleSeatPickingStrategy();
+        SeatPickingStrategy<RectangularVenue> seatPickingStrategy = new RectangularVenueSimpleSeatPickingStrategy();
         venue = new RectangularVenue(3, 3, seatPickingStrategy);
     }
 
@@ -64,8 +64,11 @@ class SeatHoldTest {
         SeatHold seatHold = new SeatHold(2, venue);
         int id = seatHold.getId();
         seatHold.remove();
-        assertTrue(seatHold.expired(), "Removed SeatHold should be expired immediately");
-        assertEquals(0, seatHold.getNumSeatsHeld(), "SeatHold should have 0 seats associated");
-        assertFalse(IdGenerator.retireId(id), "IdGenerator should have the SeatHold's ID retired");
+        assertAll(
+                "Check SeatHolds",
+                () -> assertTrue(seatHold.expired(), "Removed SeatHold should be expired immediately"),
+                () -> assertEquals(0, seatHold.getNumSeatsHeld(), "SeatHold should have 0 seats associated"),
+                () -> assertFalse(IdGenerator.retireId(id), "IdGenerator should have the SeatHold's ID retired")
+        );
     }
 }

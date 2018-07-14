@@ -3,6 +3,7 @@ package org.dreesbach.ticketing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -29,18 +30,27 @@ class SeatTest {
     @Test
     void hold() {
         seat.hold();
-        assertEquals(false, seat.isAvailable(), "Holding a seat should make it unavailable");
-        assertEquals(false, seat.isReserved(), "Seat should not be reserved");
+        assertAll(
+                "check conditions",
+                () -> assertEquals(false, seat.isAvailable(), "Holding a seat should make it unavailable"),
+                () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
+        );
     }
 
     @Test
     void cancelHold() {
         seat.hold();
-        assertEquals(false, seat.isAvailable(), "Make sure seat got held");
-        assertEquals(false, seat.isReserved(), "Seat should not be reserved");
+        assertAll(
+                "ensure hold",
+                () -> assertEquals(false, seat.isAvailable(), "Make sure seat got held"),
+                () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
+        );
         seat.cancelHold();
-        assertEquals(true, seat.isAvailable(), "Releasing an unreserved seat should work");
-        assertEquals(false, seat.isReserved(), "Seat should not be reserved");
+        assertAll(
+                "check cancellation",
+                () -> assertEquals(true, seat.isAvailable(), "Releasing an unreserved seat should work"),
+                () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
+        );
     }
 
     @Test
@@ -61,16 +71,22 @@ class SeatTest {
         seat.hold();
         assertEquals(false, seat.isAvailable(), "Make sure seat got held");
         seat.cancelHold();
-        assertEquals(true, seat.isAvailable(), "A released seat should be available for reservation again");
-        assertEquals(false, seat.isReserved(), "Seat should not be reserved");
+        assertAll(
+                "check conditions",
+                () -> assertEquals(true, seat.isAvailable(), "A released seat should be available for reservation again"),
+                () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
+        );
     }
 
     @Test
     void reserve() {
         seat.hold(); // have to hold before reserving
         seat.reserve();
-        assertEquals(false, seat.isAvailable(), "Reserving a seat should also make it unavailable");
-        assertEquals(true, seat.isReserved(), "Reserving a seat should mark it as such");
+        assertAll(
+                "check conditions",
+                () -> assertEquals(false, seat.isAvailable(), "Reserving a seat should also make it unavailable"),
+                () -> assertEquals(true, seat.isReserved(), "Reserving a seat should mark it as such")
+        );
     }
 
     @Test
@@ -83,11 +99,17 @@ class SeatTest {
     void releaseReservedSeat() {
         seat.hold(); // have to hold before reserving
         seat.reserve();
-        assertEquals(false, seat.isAvailable(), "Make sure seat got held");
-        assertEquals(true, seat.isReserved(), "Make sure seat got reserved");
+        assertAll(
+                "before cancellation",
+                () -> assertEquals(false, seat.isAvailable(), "Make sure seat got held"),
+                () -> assertEquals(true, seat.isReserved(), "Make sure seat got reserved")
+        );
         seat.cancelReservation();
-        assertEquals(true, seat.isAvailable(), "A released seat should be available for reservation again");
-        assertEquals(false, seat.isReserved(), "Seat should not be reserved");
+        assertAll(
+                "after cancellation",
+                () -> assertEquals(true, seat.isAvailable(), "A released seat should be available for reservation again"),
+                () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
+        );
     }
 
     @Test

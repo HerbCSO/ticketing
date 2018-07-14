@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import java.time.Duration;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,10 +72,12 @@ class TicketServiceImplTest {
     @Test
     void holdMoreSeatsThanAreAvailable() {
         SeatHold seatHold = ticketService.findAndHoldSeats(100_000, CUSTOMER_EMAIL);
-        assertEquals(0, ticketService.numSeatsAvailable(), "Should have attempted to hold all remaining seats");
-        assertEquals(seatHold.getNumSeatsHeld(),
-                defaultVenue.getTotalNumSeats(),
-                "Should only have held the total number of seats in existence at the location"
+        assertAll("check postconditions",
+                () -> assertEquals(0, ticketService.numSeatsAvailable(), "Should have attempted to hold all remaining seats"),
+                () -> assertEquals(seatHold.getNumSeatsHeld(),
+                        defaultVenue.getTotalNumSeats(),
+                        "Should only have held the total number of seats in existence at the location"
+                )
         );
     }
 
