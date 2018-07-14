@@ -36,8 +36,9 @@ final class RectangularVenue implements Venue {
      * @param seatsPerRow number of seats per row - same for all rows in this simple arrangement
      * @param seatPickingStrategy the strategy for picking the best seats
      */
-    RectangularVenue(final int numRows, final int seatsPerRow,
-                     final SeatPickingStrategy<RectangularVenue> seatPickingStrategy) {
+    RectangularVenue(
+            final int numRows, final int seatsPerRow, final SeatPickingStrategy<RectangularVenue> seatPickingStrategy
+    ) {
         this.numRows = numRows;
         this.seatsPerRow = seatsPerRow;
         availableNumSeats = getTotalNumSeats();
@@ -55,7 +56,8 @@ final class RectangularVenue implements Venue {
         for (int row = 0; row < seats.length; row++) {
             for (int col = 0; col < seats[row].length; col++) {
                 // we set seat IDs to be 1-indexed for normal human consumption
-                seats[row][col] = new SeatImpl(String.format("Row %d Seat %d", row + 1, col + 1), 0);
+                seats[row][col] =
+                        new SeatImpl(String.format("Row %d Seat %d", row + 1, col + 1), row * seats[row].length + col);
                 // TODO: set seat "value" to identify best to worst seats here
             }
         }
@@ -79,8 +81,8 @@ final class RectangularVenue implements Venue {
     /**
      * Reserve seats in the location.
      * <p>
-     * This method is synchronized to ensure only one thread at a time can hold seats. This may end up being a bottleneck
-     * later on, something to watch out for in a multi-threaded web server environment, for example.
+     * This method is synchronized to ensure only one thread at a time can hold seats. This may end up being a bottleneck later
+     * on, something to watch out for in a multi-threaded web server environment, for example.
      *
      * @param numSeatsToHold the number of seats to be reserved
      * @return the actual number of seats that could be reserved - could be less than what was requested, all the way down to 0
@@ -92,6 +94,12 @@ final class RectangularVenue implements Venue {
         }
         availableNumSeats -= bestSeats.size();
         return bestSeats;
+    }
+
+    @Override
+    public synchronized void removeHold(final SeatHold seatHold) {
+        availableNumSeats += seatHold.getNumSeatsHeld();
+        seatHold.remove();
     }
 
     @Override

@@ -147,6 +147,7 @@ public final class TicketServiceImpl implements TicketService {
         for (Iterator<Map.Entry<Integer, SeatHold>> it = seatHolds.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Integer, SeatHold> entry = it.next();
             if (entry.getValue().expired()) {
+                venue.removeHold(entry.getValue());
                 it.remove();
             } else {
                 // we've gotten to the end of the expired entries, since they're sorted by insertion order, so quit here

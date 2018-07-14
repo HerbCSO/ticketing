@@ -158,7 +158,6 @@ class TicketServiceImplTest {
 
     @Test
     void stadiumSizedVenue() {
-        // TODO: profile this, really slows down as it approaches 100k SeatHolds
         SeatPickingStrategy<RectangularVenue> seatPickingStrategy = new RectangularVenueSimpleSeatPickingStrategy();
         Venue venue = new RectangularVenue(100, 1_000, seatPickingStrategy);
         TicketService localTicketService = new TicketServiceImpl(venue, 500, Duration.ofSeconds(2));

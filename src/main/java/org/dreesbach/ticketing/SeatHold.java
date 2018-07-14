@@ -113,6 +113,7 @@ class SeatHold {
         if (expirationTime.isAfter(Instant.now())) {
             expirationTime = Instant.now();
         }
+        seatsHeld.stream().forEach(Seat::cancelHold);
         seatsHeld = Collections.emptyList();
     }
 }

@@ -30,6 +30,13 @@ public interface Venue {
     List<Seat> holdSeats(int numSeatsToHold);
 
     /**
+     * Remove a prior SeatHold (e.g. when it expires).
+     *
+     * @param seatHold the SeatHold to remove
+     */
+    void removeHold(SeatHold seatHold);
+
+    /**
      * Set a strategy for selecting the best seats.
      *
      * @param seatPickingStrategy the strategy to use

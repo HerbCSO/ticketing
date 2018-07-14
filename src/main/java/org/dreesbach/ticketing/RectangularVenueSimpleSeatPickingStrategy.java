@@ -1,39 +1,64 @@
 package org.dreesbach.ticketing;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * A seat picking strategy for a retangular venue.
  */
 public class RectangularVenueSimpleSeatPickingStrategy implements SeatPickingStrategy<RectangularVenue> {
     /**
+     * This will be a priority queue sorted from best to worst seat so that we can pick off the head of the queue in order to
+     * select the best seats.
+     */
+    private Queue<Seat> seatQueueBestToWorst;
+
+    /**
      * Go through the available seats and return the best ones.
-     *
-     * TODO: simplest possible initial implementation for now, this is stupidly inefficient, does not return the best seats
-     * yet (only first available), and should be redesigned to work much faster - maybe using a priority queue sorted by best
-     * to worst seat?
      *
      * @param numSeatsToPick number of seats to pick for reservation
      * @return an array of available {@link Seat}s in the best locations
      */
     @Override
-    public final List<Seat> pickBestAvailableSeats(final RectangularVenue venue,
-                                                   final int numSeatsToPick) {
+    public final synchronized List<Seat> pickBestAvailableSeats(
+            final RectangularVenue venue, final int numSeatsToPick
+    ) {
+        if (numSeatsToPick < 0) {
+            throw new IllegalArgumentException("Number of seats to pick must be greater than 0");
+        }
         int seatsPicked = 0;
+        if (seatQueueBestToWorst == null) {
+            fillSeatQueue(venue);
+        }
         List<Seat> bestSeats = new ArrayList<>();
-        Seat[][] seats = venue.getSeats();
-        for (int row = 0; row < seats.length; row++) {
-            for (int col = 0; col < seats[row].length; col++) {
-                if (seats[row][col].isAvailable()) {
-                    if (seatsPicked == numSeatsToPick) {
-                        return bestSeats;
-                    }
-                    seatsPicked++;
-                    bestSeats.add(seats[row][col]);
-                }
-            }
+        Seat nextSeat;
+        while (seatQueueBestToWorst.peek() != null && seatsPicked < numSeatsToPick) {
+            nextSeat = seatQueueBestToWorst.poll();
+            seatsPicked++;
+            bestSeats.add(nextSeat);
         }
         return bestSeats;
+    }
+
+    /**
+     * Fill the queue with the seats, ordered from best to worst.
+     *
+     * @param venue the venue that has the seats
+     */
+    private void fillSeatQueue(final RectangularVenue venue) {
+        if (seatQueueBestToWorst != null) {
+            throw new IllegalStateException("Tried to re-initialize seat queue, this shouldn't happen");
+        }
+        seatQueueBestToWorst =
+                new PriorityBlockingQueue<>(venue.getTotalNumSeats(), Comparator.comparingInt(Seat::seatGoodness));
+        Seat[][] seats = venue.getSeats();
+        for (Seat[] seatRow : seats) {
+            for (Seat seat : seatRow) {
+                seatQueueBestToWorst.add(seat);
+            }
+        }
     }
 }
