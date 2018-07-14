@@ -1,7 +1,11 @@
 package org.dreesbach.ticketing;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.time.Duration;
 
@@ -14,13 +18,22 @@ class TicketServiceImplTest {
     private static final int NUM_ROWS = 3;
     private static final int NUM_COLS = 3;
     private Venue defaultVenue;
+    private static Venue persistentDefaultVenue;
     private TicketService ticketService;
+    private static TicketService persistentTicketService;
+
+    @BeforeAll
+    public static void setupAll() {
+        SeatPickingStrategy<RectangularVenue> seatPickingStrategy = new RectangularVenueSimpleSeatPickingStrategy();
+        persistentDefaultVenue = new RectangularVenue(NUM_ROWS, NUM_COLS, seatPickingStrategy);
+        persistentTicketService = new TicketServiceImpl(persistentDefaultVenue);
+    }
 
     @BeforeEach
     public void setup() {
         SeatPickingStrategy<RectangularVenue> seatPickingStrategy = new RectangularVenueSimpleSeatPickingStrategy();
-        this.defaultVenue = new RectangularVenue(NUM_ROWS, NUM_COLS, seatPickingStrategy);
-        this.ticketService = new TicketServiceImpl(defaultVenue);
+        defaultVenue = new RectangularVenue(NUM_ROWS, NUM_COLS, seatPickingStrategy);
+        ticketService = new TicketServiceImpl(defaultVenue);
     }
 
     @Test
@@ -65,21 +78,31 @@ class TicketServiceImplTest {
         );
     }
 
-    @Test
-    void multipleSeatHoldRequests() {
-        int[][] numSeatsToRequest = { { 2, 2 }, { 0, 0 }, { 1, 1 }, { 3, 3 }, { 4, 3 }, { 1, 0 }, { 0, 0 } };
-        int expectedNumSeatsAvailable = NUM_ROWS * NUM_COLS;
-        for (int[] numSeats : numSeatsToRequest) {
-            int numSeatsRequested = numSeats[0];
-            int numSeatsExpected = numSeats[1];
-            SeatHold seatHold = ticketService.findAndHoldSeats(numSeatsRequested, "email1");
-            expectedNumSeatsAvailable -= numSeatsExpected;
-            assertEquals(expectedNumSeatsAvailable,
-                    ticketService.numSeatsAvailable(),
-                    "Seats available does not match expectation"
-            );
-            assertEquals(seatHold.getNumSeatsHeld(), numSeatsExpected, "Should have held " + numSeatsRequested + " seats");
-        }
+    /**
+     * This test version is actually a bit more complicated than the non-parameterized version since it:
+     *
+     *   1. Introduces a new dependency (junit-jupiter-params)
+     *   2. Requires another, persistent TicketService to be set up (to track state across test executions, which could
+     *      be troublesome)
+     *
+     * The test itself is a bit simpler, which is good, but there is lots of additional, slightly hidden complexity,
+     * which is bad. I'm not convinced that for this case it is an appropriate usage, however I'll leave this here for
+     * demonstration purposes.
+     *
+     * @param numSeatsRequested number of seats to request for the test execution
+     * @param numSeatsExpected
+     * @param expectedNumSeatsAvailable
+     */
+    @DisplayName("Multiple seat holds")
+    @ParameterizedTest(name = "[{0}] requested seats should have held [{1}], now [{2}] seats available in venue")
+    @CsvSource({ "2, 2, 7", "0, 0, 7", "1, 1, 6", "3, 3, 3", "4, 3, 0", "1, 0, 0", "0, 0, 0" })
+    void multipleSeatHoldRequests(int numSeatsRequested, int numSeatsExpected, int expectedNumSeatsAvailable) {
+        SeatHold seatHold = persistentTicketService.findAndHoldSeats(numSeatsRequested, "email1");
+        assertEquals(expectedNumSeatsAvailable,
+                persistentTicketService.numSeatsAvailable(),
+                "Seats available does not match expectation"
+        );
+        assertEquals(seatHold.getNumSeatsHeld(), numSeatsExpected, "Should have held " + numSeatsRequested + " seats");
     }
 
     @Test
