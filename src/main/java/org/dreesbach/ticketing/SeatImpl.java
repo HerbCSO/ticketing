@@ -48,6 +48,11 @@ public final class SeatImpl implements Seat {
     }
 
     @Override
+    public boolean isHeld() {
+        return !isAvailable();
+    }
+
+    @Override
     public void cancelHold() {
         // If the seat was already available before this call, we want to throw an exception because we want to know whether
         // we're releasing seats multiple times.

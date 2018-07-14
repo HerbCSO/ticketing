@@ -31,6 +31,13 @@ public interface Seat {
     void hold();
 
     /**
+     * See if the seat is currently held or not. Convenience method, this simply returns {@code !isAvailable()}.
+     *
+     * @return true if it is held
+     */
+    boolean isHeld();
+
+    /**
      * Release this seat from a previous hold.
      */
     void cancelHold();
