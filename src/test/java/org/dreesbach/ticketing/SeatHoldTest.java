@@ -25,9 +25,9 @@ class SeatHoldTest {
 
     @Test
     void getNumSeats() {
-        int numSeats = 2;
-        SeatHold seatHold = new SeatHold(2, venue);
-        assertEquals(numSeats, seatHold.getNumSeatsHeld(), "Number of seats held should equal requested seats");
+        int numSeatsToRequest = 2;
+        SeatHold seatHold = new SeatHold(numSeatsToRequest, venue);
+        assertEquals(numSeatsToRequest, seatHold.getNumSeatsHeld(), "Number of seats held should equal requested seats");
     }
 
     @Test
