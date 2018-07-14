@@ -48,7 +48,7 @@ class SeatHold {
         this.numSeatsRequested = numSeatsRequested;
         // TODO: Do I really need to hold on to this here?
         this.venue = venue;
-        id = IdGenerator.generateUniqueId();
+        id = IdGenerator.generateUniqueIntId();
         expirationTime = Instant.now().plus(seatHoldExpirationTime);
         // TODO: This was possibly a stupid decision - maybe I should invert the relationship and make SeatHold be instantiated
         // by Venue instead?
