@@ -1,5 +1,6 @@
 package org.dreesbach.ticketing;
 
+import org.dreesbach.ticketing.id.IdGenerator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -7,8 +8,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -18,10 +26,11 @@ class TicketServiceImplTest {
     private static final String CUSTOMER_EMAIL = "me@you.com";
     private static final int NUM_ROWS = 3;
     private static final int NUM_COLS = 3;
-    private Venue defaultVenue;
+    private static final int TOTAL_SEATS = NUM_ROWS * NUM_COLS;
     private static Venue persistentDefaultVenue;
-    private TicketService ticketService;
     private static TicketService persistentTicketService;
+    private Venue defaultVenue;
+    private TicketService ticketService;
 
     @BeforeAll
     public static void setupAll() {
@@ -115,7 +124,8 @@ class TicketServiceImplTest {
         assertEquals(seatHold.getNumSeatsHeld(), 2, "Should have held 2 seats");
         assertEquals(seatHold.getNumSeatsRequested(), 2, "Should have requested 2 seats");
         String reservationCode = ticketService.reserveSeats(seatHold.getId(), CUSTOMER_EMAIL);
-        assertEquals("Reservation code", reservationCode, "Reservation code should match expected");
+        assertThat("Reservation code should match expected", reservationCode, matchesPattern("[A-Z0-9]{6}"));
+        defaultVenue.printSeats();
     }
 
     @Test
@@ -128,6 +138,7 @@ class TicketServiceImplTest {
                 ((TicketServiceImpl) ticketServiceWithImmediateExpiration).numSeatsHeld(),
                 "No seats should be held anymore"
         );
+        defaultVenue.printSeats();
     }
 
     @Test
@@ -141,6 +152,49 @@ class TicketServiceImplTest {
         assertEquals(numSeats,
                 ((TicketServiceImpl) ticketServiceWithSlowExpiration).numSeatsHeld(),
                 "Seats should still be held"
+        );
+        defaultVenue.printSeats();
+    }
+
+    @Test
+    void stadiumSizedVenue() {
+        // TODO: profile this, really slows down as it approaches 100k SeatHolds
+        SeatPickingStrategy<RectangularVenue> seatPickingStrategy = new RectangularVenueSimpleSeatPickingStrategy();
+        Venue venue = new RectangularVenue(100, 1_000, seatPickingStrategy);
+        TicketService localTicketService = new TicketServiceImpl(venue, 500, Duration.ofSeconds(2));
+        SecureRandom rnd = new SecureRandom();
+        rnd.setSeed(Instant.now().getEpochSecond());
+        Map<String, SeatHold> seatHolds = new HashMap<>();
+        int counter = 0;
+        while (venue.getAvailableNumSeats() > 0) {
+            String email = "email" + counter;
+            seatHolds.put(email, localTicketService.findAndHoldSeats(rnd.nextInt(20), email));
+            counter++;
+            if (counter % 1000 == 0) {
+                System.out.println(counter + " SeatHolds created");
+                System.out.println(venue.getAvailableNumSeats() + " seats available out of " + venue.getTotalNumSeats());
+            }
+        }
+        counter = 0;
+        for (Map.Entry<String, SeatHold> seatHold : seatHolds.entrySet()) {
+            try {
+                localTicketService.reserveSeats(seatHold.getValue().getId(), seatHold.getKey());
+            }
+            catch (IllegalStateException ise) {
+                counter--;
+            }
+            counter++;
+            if (counter % 1000 == 0) {
+                System.out.println(counter + " SeatHolds reserved");
+            }
+        }
+        assertAll("check postconditions",
+                () -> assertEquals(0, venue.getAvailableNumSeats(), "Expcted 0 seats left"),
+                () -> assertEquals(0, localTicketService.numSeatsAvailable(), "Expected 0 seats available"),
+                () -> assertThat("Expected more than 1,000 seat holds to still not be expired",
+                        ((TicketServiceImpl) localTicketService).numSeatsHeld(),
+                        greaterThanOrEqualTo(1_000)
+                )
         );
     }
 }

@@ -1,5 +1,7 @@
 package org.dreesbach.ticketing;
 
+import org.dreesbach.ticketing.id.IdGenerator;
+
 import java.util.List;
 
 /**
@@ -88,13 +90,21 @@ final class RectangularVenue implements Venue {
         for (Seat seat : bestSeats) {
             seat.hold();
         }
-        availableNumSeats = availableNumSeats - bestSeats.size();
+        availableNumSeats -= bestSeats.size();
         return bestSeats;
     }
 
     @Override
     public void setSeatPickingStrategy(final SeatPickingStrategy seatPickingStrategy) {
         this.seatPickingStrategy = seatPickingStrategy;
+    }
+
+    @Override
+    public String reserve(final SeatHold seatHold) {
+        for (Seat seat : seatHold.getSeatsHeld()) {
+            seat.reserve();
+        }
+        return IdGenerator.generateReservationCode();
     }
 
     /**
@@ -104,5 +114,26 @@ final class RectangularVenue implements Venue {
      */
     public Seat[][] getSeats() {
         return seats;
+    }
+
+    @Override
+    public void printSeats() {
+        for (Seat[] seatRow : seats) {
+            for (Seat seat : seatRow) {
+                if (seat.isAvailable()) {
+                    System.out.print("A ");
+                    continue;
+                }
+                if (seat.isReserved()) {
+                    System.out.print("R ");
+                    continue;
+                }
+                if (seat.isHeld()) {
+                    System.out.print("H ");
+                    continue;
+                }
+            }
+            System.out.println();
+        }
     }
 }
