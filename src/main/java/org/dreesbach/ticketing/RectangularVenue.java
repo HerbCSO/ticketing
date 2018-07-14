@@ -55,7 +55,7 @@ final class RectangularVenue implements Venue {
         for (int row = 0; row < seats.length; row++) {
             for (int col = 0; col < seats[row].length; col++) {
                 // we set seat IDs to be 1-indexed for normal human consumption
-                seats[row][col] = new SeatImpl(String.format("Row %d Seat %d", row + 1, col + 1));
+                seats[row][col] = new SeatImpl(String.format("Row %d Seat %d", row + 1, col + 1), 0);
                 // TODO: set seat "value" to identify best to worst seats here
             }
         }

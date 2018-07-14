@@ -51,4 +51,11 @@ public interface Seat {
      * Cancel a previous reservation, making the seat available again.
      */
     void cancelReservation();
+
+    /**
+     * Return a measure of the seat's "goodness", i.e. how desirable the seat is.
+     *
+     * @return an int that measures how good the seat is - higher number = better seat
+     */
+    int seatGoodness();
 }

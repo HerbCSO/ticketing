@@ -23,16 +23,22 @@ public final class SeatImpl implements Seat {
      * Indicates if this seat is reserved.
      */
     private boolean reserved;
+    /**
+     * Indicates how good the seat is.
+     */
+    private int goodness;
 
     /**
      * Default constructor.
      *
      * @param id the {@link String} identifier for the seat
+     * @param goodness how good the seat is - higher number = better seat
      */
-    SeatImpl(final String id) {
+    SeatImpl(final String id, final int goodness) {
         this.id = id;
         available = true;
         reserved = false;
+        this.goodness = goodness;
     }
 
     @Override
@@ -88,6 +94,11 @@ public final class SeatImpl implements Seat {
         }
         available = true;
         reserved = false;
+    }
+
+    @Override
+    public int seatGoodness() {
+        return goodness;
     }
 
     @Override

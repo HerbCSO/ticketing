@@ -14,7 +14,7 @@ class SeatTest {
 
     @BeforeEach
     void setup() {
-        this.seat = new SeatImpl(TEST_ID);
+        this.seat = new SeatImpl(TEST_ID, 0);
     }
 
     @Test
