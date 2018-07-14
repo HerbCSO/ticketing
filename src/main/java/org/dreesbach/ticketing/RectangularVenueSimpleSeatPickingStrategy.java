@@ -26,11 +26,11 @@ public class RectangularVenueSimpleSeatPickingStrategy implements SeatPickingStr
         for (int row = 0; row < seats.length; row++) {
             for (int col = 0; col < seats[row].length; col++) {
                 if (seats[row][col].isAvailable()) {
-                    seatsPicked++;
-                    bestSeats.add(seats[row][col]);
                     if (seatsPicked == numSeatsToPick) {
                         return bestSeats;
                     }
+                    seatsPicked++;
+                    bestSeats.add(seats[row][col]);
                 }
             }
         }

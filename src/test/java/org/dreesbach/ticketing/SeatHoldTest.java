@@ -31,6 +31,13 @@ class SeatHoldTest {
     }
 
     @Test
+    void testHoldingZeroSeats() {
+        int numSeatsToRequest = 0;
+        SeatHold seatHold = new SeatHold(numSeatsToRequest, venue);
+        assertEquals(numSeatsToRequest, seatHold.getNumSeatsHeld(), "Number of seats held should equal requested seats (0)");
+    }
+
+    @Test
     void requestMoreSeatsThanAvailable() {
         SeatHold seatHold = new SeatHold(1_000_000, venue);
         assertEquals(
