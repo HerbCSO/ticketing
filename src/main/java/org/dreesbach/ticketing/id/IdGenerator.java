@@ -77,7 +77,7 @@ public final class IdGenerator {
      * @return a {@value MAX_RESERVATION_CODE_LENGTH} character unique string
      */
     private static String internalGenerateReservationCode() {
-        byte[] bytes = new byte[MAX_RESERVATION_CODE_LENGTH];
+        byte[] bytes = new byte[MAX_RESERVATION_CODE_LENGTH + 1];
         new SecureRandom().nextBytes(bytes);
         BigInteger bigInteger = new BigInteger(bytes).abs();
         return bigInteger.toString(Character.MAX_RADIX).toUpperCase().substring(0, MAX_RESERVATION_CODE_LENGTH);
