@@ -5,6 +5,7 @@ import org.dreesbach.ticketing.id.IdGenerator;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,8 +20,6 @@ class SeatHold {
     private Instant expirationTime;
     /** Number of seats to hold for reservation. */
     private int numSeatsRequested;
-    /** The number of seats actually held. */
-    private int numSeatsHeld;
     /** Unique ID of the seat hold. */
     private int id;
     /** List of seats held. */
@@ -54,7 +53,6 @@ class SeatHold {
         // TODO: This was possibly a stupid decision - maybe I should invert the relationship and make SeatHold be instantiated
         // by Venue instead?
         seatsHeld = this.venue.holdSeats(numSeatsRequested);
-        numSeatsHeld = seatsHeld.size();
     }
 
     /**
@@ -63,7 +61,7 @@ class SeatHold {
      * @return number of seats held
      */
     public int getNumSeatsHeld() {
-        return numSeatsHeld;
+        return seatsHeld.size();
     }
 
     /**
@@ -115,7 +113,6 @@ class SeatHold {
         if (expirationTime.isAfter(Instant.now())) {
             expirationTime = Instant.now();
         }
-        numSeatsHeld = 0;
-        seatsHeld = null;
+        seatsHeld = Collections.emptyList();
     }
 }
