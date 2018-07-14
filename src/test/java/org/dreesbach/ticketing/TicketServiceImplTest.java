@@ -66,6 +66,23 @@ class TicketServiceImplTest {
     }
 
     @Test
+    void multipleSeatHoldRequests() {
+        int[][] numSeatsToRequest = { { 2, 2 }, { 0, 0 }, { 1, 1 }, { 3, 3 }, { 4, 3 }, { 1, 0 }, { 0, 0 } };
+        int expectedNumSeatsAvailable = NUM_ROWS * NUM_COLS;
+        for (int[] numSeats : numSeatsToRequest) {
+            int numSeatsRequested = numSeats[0];
+            int numSeatsExpected = numSeats[1];
+            SeatHold seatHold = ticketService.findAndHoldSeats(numSeatsRequested, "email1");
+            expectedNumSeatsAvailable -= numSeatsExpected;
+            assertEquals(expectedNumSeatsAvailable,
+                    ticketService.numSeatsAvailable(),
+                    "Seats available does not match expectation"
+            );
+            assertEquals(seatHold.getNumSeatsHeld(), numSeatsExpected, "Should have held " + numSeatsRequested + " seats");
+        }
+    }
+
+    @Test
     void reserveSeats() {
         SeatHold seatHold = ticketService.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertEquals(seatHold.getNumSeatsHeld(), 2, "Should have held 2 seats");
