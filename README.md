@@ -2,10 +2,9 @@
 
 ## Assumptions
 
-1. This is a simplistic implementation as far as the seat arrangement goes in that it assumes a rectangular seat layout with the same number of seats in every row.
+1. This is a simplistic implementation as far as the seat arrangement goes in that it assumes a rectangular seat layout with the same number of seats in every row. However provisions have been made to supply other seat arrangements and seat selection algorithms.
 
-2. Seat reservations are made automatically based on a "best available" algorithm.
-TODO: Describe this algorithm
+2. Seat reservations are made automatically based on a "best available" algorithm. It selects seats based on distance from front, center seat - the closer to this center the seat is, the better it is considered to be.
 
 3. Volume is expected to be less than 1,000 seat reservation attempts per second. If higher volume than that is expected, additional performance optimizations may be necessary.
 
