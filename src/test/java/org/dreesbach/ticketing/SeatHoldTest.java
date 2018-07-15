@@ -11,6 +11,7 @@ import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SeatHoldTest {
@@ -35,6 +36,12 @@ class SeatHoldTest {
         int numSeatsToRequest = 0;
         SeatHold seatHold = new SeatHold(numSeatsToRequest, venue);
         assertEquals(numSeatsToRequest, seatHold.getNumSeatsHeld(), "Number of seats held should equal requested seats (0)");
+    }
+
+    @Test
+    void testHoldingNegativeSeats() {
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> new SeatHold(-1, venue), "Exception expected");
+        assertEquals("numSeatsRequested must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test

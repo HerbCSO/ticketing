@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Math.sqrt;
 
 /**
@@ -34,11 +36,11 @@ final class RectangularVenue implements Venue {
      */
     private SeatPickingStrategy seatPickingStrategy;
     /**
-     * Keeps track of reserved seats. This is not strictly necessary in the scope of the problem statement (there is nothing
-     * in the {@link TicketService} interface that requires being able to retrieve a reservation based on the reservation
-     * code), however it feels natural to have this available here. It does require some more memory and will slow down
-     * reservations a little bit, so if that turns into an issue, we can always remove this again and have some other
-     * component be responsible for tracking reservations.
+     * Keeps track of reserved seats. This is not strictly necessary in the scope of the problem statement (there is nothing in
+     * the {@link TicketService} interface that requires being able to retrieve a reservation based on the reservation code),
+     * however it feels natural to have this available here. It does require some more memory and will slow down reservations a
+     * little bit, so if that turns into an issue, we can always remove this again and have some other component be responsible
+     * for tracking reservations.
      */
     private Map<String, List<Seat>> seatReservations;
 
@@ -52,12 +54,9 @@ final class RectangularVenue implements Venue {
     RectangularVenue(
             final int numRows, final int seatsPerRow, final SeatPickingStrategy<RectangularVenue> seatPickingStrategy
     ) {
-        if (numRows < 1) {
-            throw new IllegalArgumentException("Number of rows must be > 0");
-        }
-        if (seatsPerRow < 1) {
-            throw new IllegalArgumentException("Number of seats per row must be > 0");
-        }
+        checkNotNull(seatPickingStrategy, "seatPickingStrategy cannot be null");
+        checkArgument(numRows > 0, "Number of rows must be > 0");
+        checkArgument(seatsPerRow > 0, "Number of seats per row must be > 0");
         this.numRows = numRows;
         this.seatsPerRow = seatsPerRow;
         availableNumSeats = getTotalNumSeats();
@@ -73,6 +72,7 @@ final class RectangularVenue implements Venue {
      * @param seats the seats array
      */
     private void fillSeats(final Seat[][] seats) {
+        checkNotNull(seats, "seats cannot be null");
         for (int row = 0; row < seats.length; row++) {
             for (int col = 0; col < seats[row].length; col++) {
                 // we set seat IDs to be 1-indexed for normal human consumption
@@ -91,6 +91,8 @@ final class RectangularVenue implements Venue {
      * @return the "goodness" score - relative to the size of the venue, the higher the better, minimum of 1
      */
     double getGoodness(final int row, final int col) {
+        checkArgument(row >= 0 && row < numRows, "row must be between %s and %s (inclusive)", 0, numRows - 1);
+        checkArgument(col >= 0 && col < seatsPerRow, "col must be between %s and %s (inclusive)", 0, seatsPerRow - 1);
         return sqrt(getYPosition(row) * getYPosition(row) + getXPosition(col) * getXPosition(col));
     }
 
@@ -101,9 +103,7 @@ final class RectangularVenue implements Venue {
      * @return the "goodness" score - relative to the size of the venue, the lower the better, minimum of 0
      */
     double getYPosition(final int row) {
-        if (row < 0 || row >= numRows) {
-            throw new IllegalArgumentException("Row must be between 0 and " + (numRows - 1));
-        }
+        checkArgument(row >= 0 && row < numRows, "row must be between %s and %s (inclusive)", 0, numRows - 1);
         return (double) row;
     }
 
@@ -114,9 +114,7 @@ final class RectangularVenue implements Venue {
      * @return the "goodness" score - relative to the size of the venue, the lower the better, minimum of 0
      */
     double getXPosition(final int col) {
-        if (col < 0 || col >= seatsPerRow) {
-            throw new IllegalArgumentException("Column must be between 0 and " + (seatsPerRow - 1));
-        }
+        checkArgument(col >= 0 && col < seatsPerRow, "col must be between %s and %s (inclusive)", 0, seatsPerRow - 1);
         return -(((double) (seatsPerRow - 1) / 2) - col);
     }
 
@@ -145,6 +143,7 @@ final class RectangularVenue implements Venue {
      * @return the actual number of seats that could be held - could be less than what was requested, all the way down to 0
      */
     public synchronized List<Seat> holdSeats(final int numSeatsToHold) {
+        checkArgument(numSeatsToHold >= 0, "numSeatsToHold must be >= 0");
         List<Seat> bestSeats = seatPickingStrategy.pickBestAvailableSeats(this, numSeatsToHold);
         for (Seat seat : bestSeats) {
             seat.hold();
@@ -155,18 +154,18 @@ final class RectangularVenue implements Venue {
 
     @Override
     public synchronized void removeHold(final SeatHold seatHold) {
-        availableNumSeats += seatHold.getNumSeatsHeld();
+        availableNumSeats += checkNotNull(seatHold).getNumSeatsHeld();
         seatHold.remove();
     }
 
     @Override
     public void setSeatPickingStrategy(final SeatPickingStrategy seatPickingStrategy) {
-        this.seatPickingStrategy = seatPickingStrategy;
+        this.seatPickingStrategy = checkNotNull(seatPickingStrategy);
     }
 
     @Override
     public synchronized String reserve(final SeatHold seatHold) {
-        for (Seat seat : seatHold.getSeatsHeld()) {
+        for (Seat seat : checkNotNull(seatHold).getSeatsHeld()) {
             seat.reserve();
         }
         String reservationCode = IdGenerator.generateReservationCode();
@@ -176,6 +175,10 @@ final class RectangularVenue implements Venue {
 
     @Override
     public synchronized void cancelReservation(final String reservationCode) {
+        checkArgument(reservationCode.length() == IdGenerator.MAX_RESERVATION_CODE_LENGTH,
+                "Expected a %s-character reservation code",
+                IdGenerator.MAX_RESERVATION_CODE_LENGTH
+        );
         if (seatReservations.containsKey(reservationCode)) {
             availableNumSeats += seatReservations.get(reservationCode).size();
             for (Seat seat : seatReservations.get(reservationCode)) {
@@ -183,7 +186,8 @@ final class RectangularVenue implements Venue {
             }
             seatReservations.remove(reservationCode);
             IdGenerator.retireReservationId(reservationCode);
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Reservation code " + reservationCode + " not found");
         }
     }
@@ -201,10 +205,8 @@ final class RectangularVenue implements Venue {
     public void printSeats() {
         String header = " STAGE ";
         int padding = (seatsPerRow * 2 - header.length()) / 2;
-        System.out.println(
-                String.join("", Collections.nCopies(padding, "-"))
-                + " STAGE "
-                + String.join("", Collections.nCopies(padding, "-")
+        System.out.println(String.join("", Collections.nCopies(padding, "-")) + " STAGE " + String.join("",
+                Collections.nCopies(padding, "-")
         ));
         for (Seat[] seatRow : seats) {
             for (Seat seat : seatRow) {

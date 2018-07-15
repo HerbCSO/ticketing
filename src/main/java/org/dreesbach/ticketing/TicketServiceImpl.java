@@ -9,6 +9,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Default implementation of TicketService interface.
  */
@@ -22,6 +25,10 @@ public final class TicketServiceImpl implements TicketService {
      * Default seat hold expiration time.
      */
     private static final Duration DEFAULT_SEAT_HOLD_EXPIRATION_TIME = Duration.ofMinutes(5);
+    /**
+     * Minimum acceptable length for an email string.
+     */
+    private static final int MIN_EMAIL_STRING_LENGTH = 3;
     /**
      * How long it takes for seat holds to expire.
      */
@@ -59,12 +66,11 @@ public final class TicketServiceImpl implements TicketService {
      * @param seatHoldExpirationTime how long until a {@link SeatHold} expires
      */
     TicketServiceImpl(
-            final Venue venue,
-            final long seatHoldCheckExpirationMilliseconds,
-            final Duration seatHoldExpirationTime
+            final Venue venue, final long seatHoldCheckExpirationMilliseconds, final Duration seatHoldExpirationTime
     ) {
-        this.venue = venue;
-        this.seatHoldExpirationTime = seatHoldExpirationTime;
+        checkArgument(seatHoldCheckExpirationMilliseconds > 0, "seatHoldCheckExpirationMilliseconds must be > 0");
+        this.venue = checkNotNull(venue, "venue cannot be null");
+        this.seatHoldExpirationTime = checkNotNull(seatHoldExpirationTime, "seatHoldExpirationTime cannot be null");
         // We assign a map sized as per the total capacity of the venue, meaning we can support SeatHolds of size 1 for
         // every seat there. This is probably overkill, however it should ensure that the map never needs to grow, keeping
         // throughput constant.
@@ -94,11 +100,15 @@ public final class TicketServiceImpl implements TicketService {
      */
     @Override
     public synchronized SeatHold findAndHoldSeats(final int numSeats, final String customerEmail) {
+        checkArgument(numSeats >= 0, "numSeats must be >= 0");
+        checkNotNull(customerEmail, "customerEmail cannot be null");
+        checkEmailParam(customerEmail);
         // TODO: delegate this to Venue?
         SeatHold seatHold = new SeatHold(numSeats, venue, seatHoldExpirationTime);
         if (seatHolds.containsKey(seatHold.getId())) {
             throw new IllegalStateException("Tried to allocate the same SeatHold ID [" + seatHold.getId() + "] more than once");
-        } else {
+        }
+        else {
             seatHolds.put(seatHold.getId(), seatHold);
         }
         return seatHold;
@@ -109,13 +119,29 @@ public final class TicketServiceImpl implements TicketService {
      */
     @Override
     public String reserveSeats(final int seatHoldId, final String customerEmail) {
+        checkArgument(seatHoldId > 0, "seatHoldId must be > 0");
+        checkEmailParam(customerEmail);
         SeatHold seatHold;
         if (!seatHolds.containsKey(seatHoldId)) {
             throw new IllegalStateException("SeatHold ID [" + seatHoldId + "] not found");
-        } else {
+        }
+        else {
             seatHold = seatHolds.get(seatHoldId);
         }
         return venue.reserve(seatHold);
+    }
+
+    /**
+     * Convenience method to check emails are "valid". Only checks minimal length requirement right now, but could be expanded
+     * to do more.
+     *
+     * @param customerEmail email address to check
+     */
+    private void checkEmailParam(final String customerEmail) {
+        checkArgument(customerEmail.length() > MIN_EMAIL_STRING_LENGTH,
+                "C'mon, you think %s is an email address!? ;]",
+                customerEmail
+        );
     }
 
     /**
@@ -147,7 +173,8 @@ public final class TicketServiceImpl implements TicketService {
             if (entry.getValue().expired()) {
                 venue.removeHold(entry.getValue());
                 it.remove();
-            } else {
+            }
+            else {
                 // we've gotten to the end of the expired entries, since they're sorted by insertion order, so quit here
                 return;
             }

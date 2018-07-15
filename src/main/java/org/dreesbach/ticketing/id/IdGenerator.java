@@ -17,7 +17,7 @@ public final class IdGenerator {
      * maybe a key-value store like Redis, Cassandra, or Couchbase (with possibly an IMDG like Hazelcast or a simple
      * cache like memcached wrapping one of these to improve speed).
      */
-    private static final int MAX_RESERVATION_CODE_LENGTH = 6;
+    public static final int MAX_RESERVATION_CODE_LENGTH = 6;
 
     /**
      * Make utility class non-instantiable.

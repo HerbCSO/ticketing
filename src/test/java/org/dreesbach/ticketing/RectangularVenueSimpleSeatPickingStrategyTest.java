@@ -1,5 +1,6 @@
 package org.dreesbach.ticketing;
 
+import org.dreesbach.ticketing.id.IdGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,42 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     void setup() {
         seatPickingStrategy = new RectangularVenueSimpleSeatPickingStrategy();
         venue = new RectangularVenue(3, 3, seatPickingStrategy);
+    }
+
+    @Test
+    void checkNegativeRowNumberThrowsException() {
+        Throwable exception = assertThrows(IllegalArgumentException.class,
+                () -> new RectangularVenue(-1, 0, seatPickingStrategy),
+                "Expected negative row number to throw exception"
+        );
+        assertEquals("Number of rows must be > 0", exception.getMessage(), "Wrong exception message");
+    }
+
+    @Test
+    void checkZeroRowNumberThrowsException() {
+        Throwable exception = assertThrows(IllegalArgumentException.class,
+                () -> new RectangularVenue(0, 0, seatPickingStrategy),
+                "Expected zero row number to throw exception"
+        );
+        assertEquals("Number of rows must be > 0", exception.getMessage(), "Wrong exception message");
+    }
+
+    @Test
+    void checkNegativeColumnNumberThrowsException() {
+        Throwable exception = assertThrows(IllegalArgumentException.class,
+                () -> new RectangularVenue(1, -1, seatPickingStrategy),
+                "Expected negative column number to throw exception"
+        );
+        assertEquals("Number of seats per row must be > 0", exception.getMessage(), "Wrong exception message");
+    }
+
+    @Test
+    void checkZeroColumnNumberThrowsException() {
+        Throwable exception = assertThrows(IllegalArgumentException.class,
+                () -> new RectangularVenue(1, 0, seatPickingStrategy),
+                "Expected zero column number to throw exception"
+        );
+        assertEquals("Number of seats per row must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
@@ -160,6 +197,37 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     }
 
     @Test
+    void badGoodnessRow() {
+        assertThrows(IllegalArgumentException.class,
+                () -> venue.getGoodness(-1, 0),
+                "Expected negative row number to throw exception"
+        );
+        assertThrows(IllegalArgumentException.class,
+                () -> venue.getGoodness(1_000_000, 0),
+                "Expected too large row number to throw exception"
+        );
+    }
+
+    @Test
+    void badGoodnessCol() {
+        assertThrows(IllegalArgumentException.class,
+                () -> venue.getGoodness(0, -1),
+                "Expected negative column number to throw exception"
+        );
+        assertThrows(IllegalArgumentException.class,
+                () -> venue.getGoodness(0, 1_000_000),
+                "Expected too large column number to throw exception"
+        );
+    }
+
+    @Test
+    void holdNegativeNumberOfSeatsThrowsException() {
+        Throwable exception =
+                assertThrows(IllegalArgumentException.class, () -> venue.holdSeats(-1), "Expected exception " + "thrown");
+        assertEquals("numSeatsToHold must be >= 0", exception.getMessage(), "Wrong exception message");
+    }
+
+    @Test
     void displaySeatHoldProgress() {
         venue = new RectangularVenue(10, 30, seatPickingStrategy);
         for (int i = 0; i < 300; i++) {
@@ -173,13 +241,20 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
         int numSeatsToReserve = 2;
         SeatHold seatHold = new SeatHold(numSeatsToReserve, venue);
         String reservationCode = venue.reserve(seatHold);
-        assertAll(
-                "Check postconditions",
-                () -> assertEquals(venue.getTotalNumSeats() - numSeatsToReserve,
-                        venue.getAvailableNumSeats(),
-                        "Should have reserved " + numSeatsToReserve + " seats"
-                ),
-                () -> assertEquals(6, reservationCode.length(), "Expected a 6 character reservation code")
+        assertAll("Check postconditions", () -> assertEquals(venue.getTotalNumSeats() - numSeatsToReserve,
+                venue.getAvailableNumSeats(),
+                "Should have reserved " + numSeatsToReserve + " seats"
+        ), () -> assertEquals(6, reservationCode.length(), "Expected a 6 character reservation code"));
+    }
+
+    @Test
+    void reservationCodeLength() {
+        Throwable exception =
+                assertThrows(IllegalArgumentException.class, () -> venue.cancelReservation("BAD"), "Expected exception thrown");
+        assertEquals(
+                "Expected a " + IdGenerator.MAX_RESERVATION_CODE_LENGTH + "-character reservation code",
+                exception.getMessage(),
+                "Wrong exception message"
         );
     }
 

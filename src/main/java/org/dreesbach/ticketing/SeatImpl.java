@@ -1,5 +1,9 @@
 package org.dreesbach.ticketing;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 /**
  * The default impelementation of the {@link Seat} interface.
  *
@@ -32,10 +36,11 @@ public final class SeatImpl implements Seat {
      * Default constructor.
      *
      * @param id the {@link String} identifier for the seat
-     * @param goodness how good the seat is - higher number = better seat
+     * @param goodness how good the seat is - lower number = better seat
      */
     SeatImpl(final String id, final double goodness) {
-        this.id = id;
+        checkArgument(goodness >= 0.0, "goodness should be a positive value");
+        this.id = checkNotNull(id, "id should not be null");
         available = true;
         reserved = false;
         this.goodness = goodness;
@@ -43,12 +48,8 @@ public final class SeatImpl implements Seat {
 
     @Override
     public void hold() {
-        if (!available) {
-            throw new IllegalStateException("Cannot hold an unavailable seat");
-        }
-        if (reserved) {
-            throw new IllegalStateException("Seat was already reserved");
-        }
+        checkState(available, "Cannot hold an unavailable seat");
+        checkState(!reserved, "Seat was already reserved");
         available = false;
         reserved = false;
     }
@@ -62,36 +63,24 @@ public final class SeatImpl implements Seat {
     public void cancelHold() {
         // If the seat was already available before this call, we want to throw an exception because we want to know whether
         // we're releasing seats multiple times.
-        if (available) {
-            throw new IllegalStateException("Seat was already available");
-        }
-        if (reserved) {
-            throw new IllegalStateException("Cannot cancel a hold on an already-reserved seat");
-        }
+        checkState(!available, "Seat was already available");
+        checkState(!reserved, "Cannot cancel a hold on an already-reserved seat");
         available = true;
         reserved = false;
     }
 
     @Override
     public void reserve() {
-        if (available) {
-            throw new IllegalStateException("Seat was still marked as available");
-        }
-        if (reserved) {
-            throw new IllegalStateException("Seat was already reserved");
-        }
+        checkState(!available, "Seat was still marked as available");
+        checkState(!reserved, "Seat was already reserved");
         available = false;
         reserved = true;
     }
 
     @Override
     public void cancelReservation() {
-        if (available) {
-            throw new IllegalStateException("Seat was still marked as available");
-        }
-        if (!reserved) {
-            throw new IllegalStateException("Seat was not reserved");
-        }
+        checkState(!available, "Seat was still marked as available");
+        checkState(reserved, "Seat was not reserved");
         available = true;
         reserved = false;
     }

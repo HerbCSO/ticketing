@@ -1,5 +1,6 @@
 package org.dreesbach.ticketing;
 
+import org.dreesbach.ticketing.id.IdGenerator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +27,6 @@ class TicketServiceImplTest {
     private static final String CUSTOMER_EMAIL = "me@you.com";
     private static final int NUM_ROWS = 3;
     private static final int NUM_COLS = 3;
-    private static final int TOTAL_SEATS = NUM_ROWS * NUM_COLS;
     private static Venue persistentDefaultVenue;
     private static TicketService persistentTicketService;
     private Venue defaultVenue;
@@ -130,8 +130,16 @@ class TicketServiceImplTest {
 
     @Test
     void reserveUnheldSeat() {
-        Throwable exception = assertThrows(IllegalStateException.class, () -> ticketService.reserveSeats(0, "test"));
-        assertEquals("SeatHold ID [0] not found", exception.getMessage(), "Exception message didn't match expectation");
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> ticketService.reserveSeats(0, "test"));
+        assertEquals("seatHoldId must be > 0", exception.getMessage(), "Exception message didn't match expectation");
+        int id = IdGenerator.generateUniqueIntId();
+        exception = assertThrows(IllegalStateException.class, () -> ticketService.reserveSeats(id, "test"));
+        assertEquals(
+                "SeatHold ID [" + id + "] not found",
+                exception.getMessage(),
+                "Exception message didn't match " + "expectation"
+        );
+        IdGenerator.retireId(id);
     }
 
     @Test
@@ -156,10 +164,7 @@ class TicketServiceImplTest {
         // Bugger - a Mockito spy seems to be unable to catch the fact that the expiration method was called from a separate
         // thread (the ScheduledExecutorService), so I admit defeat for now and will keep the sleep in here. :/
         Thread.sleep(10L); // Ensure that the #expireSeatHolds method has had time to run
-        assertEquals(numSeats,
-                ticketServiceWithSlowExpiration.numSeatsHeld(),
-                "Seats should still be held"
-        );
+        assertEquals(numSeats, ticketServiceWithSlowExpiration.numSeatsHeld(), "Seats should still be held");
         defaultVenue.printSeats();
     }
 

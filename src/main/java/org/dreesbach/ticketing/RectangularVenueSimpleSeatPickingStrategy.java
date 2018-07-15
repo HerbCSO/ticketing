@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 /**
  * A seat picking strategy for a retangular venue.
  */
@@ -26,12 +30,10 @@ public class RectangularVenueSimpleSeatPickingStrategy implements SeatPickingStr
     public final synchronized List<Seat> pickBestAvailableSeats(
             final RectangularVenue venue, final int numSeatsToPick
     ) {
-        if (numSeatsToPick < 0) {
-            throw new IllegalArgumentException("Number of seats to pick must be greater than 0");
-        }
+        checkArgument(numSeatsToPick >= 0, "Number of seats to pick must be greater than 0");
         int seatsPicked = 0;
         if (seatQueueBestToWorst == null) {
-            fillSeatQueue(venue);
+            fillSeatQueue(checkNotNull(venue));
         }
         List<Seat> bestSeats = new ArrayList<>();
         Seat nextSeat;
@@ -49,9 +51,8 @@ public class RectangularVenueSimpleSeatPickingStrategy implements SeatPickingStr
      * @param venue the venue that has the seats
      */
     private void fillSeatQueue(final RectangularVenue venue) {
-        if (seatQueueBestToWorst != null) {
-            throw new IllegalStateException("Tried to re-initialize seat queue, this shouldn't happen");
-        }
+        checkState(seatQueueBestToWorst == null, "Tried to re-initialize seat queue, this shouldn't happen");
+        checkNotNull(venue, "venue should not be null");
         seatQueueBestToWorst =
                 new PriorityBlockingQueue<>(venue.getTotalNumSeats(), Comparator.comparingDouble(Seat::seatGoodness));
         Seat[][] seats = venue.getSeats();

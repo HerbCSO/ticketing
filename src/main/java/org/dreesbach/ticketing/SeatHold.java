@@ -8,6 +8,9 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Class to coordinate holding of seats prior to actually reserving.
  */
@@ -45,6 +48,9 @@ class SeatHold {
      * @param seatHoldExpirationTime duration until the {@code SeatHold} expires
      */
     SeatHold(final int numSeatsRequested, final Venue venue, final Duration seatHoldExpirationTime) {
+        checkArgument(numSeatsRequested >= 0, "numSeatsRequested must be > 0");
+        checkNotNull(venue, "venue cannot not be null");
+        checkNotNull(seatHoldExpirationTime, "seatHoldExpirationTime cannot be null");
         this.numSeatsRequested = numSeatsRequested;
         // TODO: Do I really need to hold on to this here?
         this.venue = venue;
