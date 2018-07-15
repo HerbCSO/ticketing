@@ -160,7 +160,7 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     }
 
     @Test
-    void displaySeatReservationProgress() {
+    void displaySeatHoldProgress() {
         venue = new RectangularVenue(10, 30, seatPickingStrategy);
         for (int i = 0; i < 300; i++) {
             venue.holdSeats(1);

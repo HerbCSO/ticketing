@@ -125,13 +125,13 @@ final class RectangularVenue implements Venue {
     }
 
     /**
-     * Reserve seats in the location.
+     * Hold seats in the location.
      * <p>
      * This method is synchronized to ensure only one thread at a time can hold seats. This may end up being a bottleneck later
      * on, something to watch out for in a multi-threaded web server environment, for example.
      *
-     * @param numSeatsToHold the number of seats to be reserved
-     * @return the actual number of seats that could be reserved - could be less than what was requested, all the way down to 0
+     * @param numSeatsToHold the number of seats to be held
+     * @return the actual number of seats that could be held - could be less than what was requested, all the way down to 0
      */
     public synchronized List<Seat> holdSeats(final int numSeatsToHold) {
         List<Seat> bestSeats = seatPickingStrategy.pickBestAvailableSeats(this, numSeatsToHold);
