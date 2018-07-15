@@ -12,7 +12,10 @@ import java.util.Set;
 public final class IdGenerator {
 
     /**
-     * Maximum length of reservation codes to generate.
+     * Maximum length of reservation codes to generate. At 6 characters we get ~2.1 billion unique codes, which should
+     * suffice for this implementation. For a more complete production implementation we'd want to keep track of these in
+     * maybe a key-value store like Redis, Cassandra, or Couchbase (with possibly an IMDG like Hazelcast or a simple
+     * cache like memcached wrapping one of these to improve speed).
      */
     private static final int MAX_RESERVATION_CODE_LENGTH = 6;
 
