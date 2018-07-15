@@ -120,7 +120,7 @@ final class RectangularVenue implements Venue {
     }
 
     @Override
-    public synchronized int getAvailableNumSeats() {
+    public int getAvailableNumSeats() {
         return availableNumSeats;
     }
 
