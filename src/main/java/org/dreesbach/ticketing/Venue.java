@@ -44,12 +44,19 @@ public interface Venue {
     void setSeatPickingStrategy(SeatPickingStrategy seatPickingStrategy);
 
     /**
-     * Reserve a previously-held seat.
+     * Reserve previously-held seat(s).
      *
      * @param seatHold the {@link SeatHold} to make a reservation for
      * @return a reservation code
      */
     String reserve(SeatHold seatHold);
+
+    /**
+     * Cancels a reservation.
+     *
+     * @param reservationCode the unique reservation code to cancel
+     */
+    void cancelReservation(String reservationCode);
 
     /**
      * Print out the current status of all seats. Simply a convenience method to be able to quickly see what the venue looks

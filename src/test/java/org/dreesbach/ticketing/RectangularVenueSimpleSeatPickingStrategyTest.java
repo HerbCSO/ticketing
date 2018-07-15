@@ -167,4 +167,32 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
             venue.printSeats();
         }
     }
+
+    @Test
+    void reserveSeat() {
+        int numSeatsToReserve = 2;
+        SeatHold seatHold = new SeatHold(numSeatsToReserve, venue);
+        String reservationCode = venue.reserve(seatHold);
+        assertAll(
+                "Check postconditions",
+                () -> assertEquals(venue.getTotalNumSeats() - numSeatsToReserve,
+                        venue.getAvailableNumSeats(),
+                        "Should have reserved " + numSeatsToReserve + " seats"
+                ),
+                () -> assertEquals(6, reservationCode.length(), "Expected a 6 character reservation code")
+        );
+    }
+
+    @Test
+    void cancelReservation() {
+        int numSeatsToReserve = 2;
+        SeatHold seatHold = new SeatHold(numSeatsToReserve, venue);
+        String reservationCode = venue.reserve(seatHold);
+        venue.cancelReservation(reservationCode);
+        assertEquals(venue.getTotalNumSeats(), venue.getAvailableNumSeats(), "All seats should be available again");
+        assertThrows(IllegalArgumentException.class,
+                () -> venue.cancelReservation(reservationCode),
+                "Venue should no longer know about this reservation code"
+        );
+    }
 }

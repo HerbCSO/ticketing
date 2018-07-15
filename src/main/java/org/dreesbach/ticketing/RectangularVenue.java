@@ -3,7 +3,9 @@ package org.dreesbach.ticketing;
 import org.dreesbach.ticketing.id.IdGenerator;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.sqrt;
 
@@ -31,6 +33,14 @@ final class RectangularVenue implements Venue {
      * The seat picking strategy to use.
      */
     private SeatPickingStrategy seatPickingStrategy;
+    /**
+     * Keeps track of reserved seats. This is not strictly necessary in the scope of the problem statement (there is nothing
+     * in the {@link TicketService} interface that requires being able to retrieve a reservation based on the reservation
+     * code), however it feels natural to have this available here. It does require some more memory and will slow down
+     * reservations a little bit, so if that turns into an issue, we can always remove this again and have some other
+     * component be responsible for tracking reservations.
+     */
+    private Map<String, List<Seat>> seatReservations;
 
     /**
      * Creates a new instance.
@@ -54,6 +64,7 @@ final class RectangularVenue implements Venue {
         seats = new Seat[numRows][seatsPerRow];
         fillSeats(seats);
         setSeatPickingStrategy(seatPickingStrategy);
+        seatReservations = new HashMap<>(getTotalNumSeats());
     }
 
     /**
@@ -154,11 +165,27 @@ final class RectangularVenue implements Venue {
     }
 
     @Override
-    public String reserve(final SeatHold seatHold) {
+    public synchronized String reserve(final SeatHold seatHold) {
         for (Seat seat : seatHold.getSeatsHeld()) {
             seat.reserve();
         }
-        return IdGenerator.generateReservationCode();
+        String reservationCode = IdGenerator.generateReservationCode();
+        seatReservations.put(reservationCode, seatHold.getSeatsHeld());
+        return reservationCode;
+    }
+
+    @Override
+    public synchronized void cancelReservation(final String reservationCode) {
+        if (seatReservations.containsKey(reservationCode)) {
+            availableNumSeats += seatReservations.get(reservationCode).size();
+            for (Seat seat : seatReservations.get(reservationCode)) {
+                seat.cancelReservation();
+            }
+            seatReservations.remove(reservationCode);
+            IdGenerator.retireReservationId(reservationCode);
+        } else {
+            throw new IllegalArgumentException("Reservation code " + reservationCode + " not found");
+        }
     }
 
     /**
