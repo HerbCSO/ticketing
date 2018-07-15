@@ -53,7 +53,7 @@ public class RectangularVenueSimpleSeatPickingStrategy implements SeatPickingStr
             throw new IllegalStateException("Tried to re-initialize seat queue, this shouldn't happen");
         }
         seatQueueBestToWorst =
-                new PriorityBlockingQueue<>(venue.getTotalNumSeats(), Comparator.comparingInt(Seat::seatGoodness));
+                new PriorityBlockingQueue<>(venue.getTotalNumSeats(), Comparator.comparingDouble(Seat::seatGoodness));
         Seat[][] seats = venue.getSeats();
         for (Seat[] seatRow : seats) {
             for (Seat seat : seatRow) {

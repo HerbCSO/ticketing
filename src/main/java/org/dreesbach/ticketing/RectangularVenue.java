@@ -2,7 +2,10 @@ package org.dreesbach.ticketing;
 
 import org.dreesbach.ticketing.id.IdGenerator;
 
+import java.util.Collections;
 import java.util.List;
+
+import static java.lang.Math.sqrt;
 
 /**
  * A simple {@link Venue} implementation that provides a rectangular arrangement of seats.
@@ -39,6 +42,12 @@ final class RectangularVenue implements Venue {
     RectangularVenue(
             final int numRows, final int seatsPerRow, final SeatPickingStrategy<RectangularVenue> seatPickingStrategy
     ) {
+        if (numRows < 1) {
+            throw new IllegalArgumentException("Number of rows must be > 0");
+        }
+        if (seatsPerRow < 1) {
+            throw new IllegalArgumentException("Number of seats per row must be > 0");
+        }
         this.numRows = numRows;
         this.seatsPerRow = seatsPerRow;
         availableNumSeats = getTotalNumSeats();
@@ -56,11 +65,48 @@ final class RectangularVenue implements Venue {
         for (int row = 0; row < seats.length; row++) {
             for (int col = 0; col < seats[row].length; col++) {
                 // we set seat IDs to be 1-indexed for normal human consumption
-                seats[row][col] =
-                        new SeatImpl(String.format("Row %d Seat %d", row + 1, col + 1), row * seats[row].length + col);
-                // TODO: set seat "value" to identify best to worst seats here
+                seats[row][col] = new SeatImpl(String.format("Row %d Seat %d", row + 1, col + 1), getGoodness(row, col));
             }
         }
+    }
+
+    /**
+     * Get the overall "goodness" score of the seat. The assumption here is that the closer to the front and the closer to the
+     * middle, the better the seat. In other words the "goodness" is maximum front row, center seat, and then decreases in
+     * concentric shells from there, with preference given to seats further forward.
+     *
+     * @param row row number of the seat, from 0 to n
+     * @param col column number of the seat, from 0 to n
+     * @return the "goodness" score - relative to the size of the venue, the higher the better, minimum of 1
+     */
+    double getGoodness(final int row, final int col) {
+        return sqrt(getYPosition(row) * getYPosition(row) + getXPosition(col) * getXPosition(col));
+    }
+
+    /**
+     * The "goodness" score of the row overall. Ranges from 1 to {@ref numRows}.
+     *
+     * @param row row number of the seat, from 1 to n
+     * @return the "goodness" score - relative to the size of the venue, the lower the better, minimum of 0
+     */
+    double getYPosition(final int row) {
+        if (row < 0 || row >= numRows) {
+            throw new IllegalArgumentException("Row must be between 0 and " + (numRows - 1));
+        }
+        return (double) row;
+    }
+
+    /**
+     * The "goodness" score of the column. Ranges from 1 to {@ref numRows}.
+     *
+     * @param col column number of the seat, from 0 to seatsPerRow / 2
+     * @return the "goodness" score - relative to the size of the venue, the lower the better, minimum of 0
+     */
+    double getXPosition(final int col) {
+        if (col < 0 || col >= seatsPerRow) {
+            throw new IllegalArgumentException("Column must be between 0 and " + (seatsPerRow - 1));
+        }
+        return -(((double) (seatsPerRow - 1) / 2) - col);
     }
 
     /**
@@ -126,6 +172,13 @@ final class RectangularVenue implements Venue {
 
     @Override
     public void printSeats() {
+        String header = " STAGE ";
+        int padding = (seatsPerRow * 2 - header.length()) / 2;
+        System.out.println(
+                String.join("", Collections.nCopies(padding, "-"))
+                + " STAGE "
+                + String.join("", Collections.nCopies(padding, "-")
+        ));
         for (Seat[] seatRow : seats) {
             for (Seat seat : seatRow) {
                 if (seat.isAvailable()) {

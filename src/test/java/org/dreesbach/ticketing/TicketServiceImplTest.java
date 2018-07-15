@@ -1,6 +1,5 @@
 package org.dreesbach.ticketing;
 
-import org.dreesbach.ticketing.id.IdGenerator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +19,7 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TicketServiceImplTest {
@@ -129,6 +129,12 @@ class TicketServiceImplTest {
     }
 
     @Test
+    void reserveUnheldSeat() {
+        Throwable exception = assertThrows(IllegalStateException.class, () -> ticketService.reserveSeats(0, "test"));
+        assertEquals("SeatHold ID [0] not found", exception.getMessage(), "Exception message didn't match expectation");
+    }
+
+    @Test
     void ensureSeatHoldsExpire() throws InterruptedException {
         TicketService ticketServiceWithImmediateExpiration = new TicketServiceImpl(defaultVenue, 1L, Duration.ZERO);
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
@@ -144,13 +150,14 @@ class TicketServiceImplTest {
     @Test
     void ensureSeatHoldsDoNotExpireTooSoon() throws InterruptedException {
         final int numSeats = 2;
-        TicketService ticketServiceWithSlowExpiration = new TicketServiceImpl(defaultVenue, 1L, Duration.ofDays(1));
+        TicketServiceImpl ticketServiceWithSlowExpiration = new TicketServiceImpl(defaultVenue, 1L, Duration.ofDays(1));
         SeatHold seatHold = ticketServiceWithSlowExpiration.findAndHoldSeats(numSeats, CUSTOMER_EMAIL);
         assertFalse(seatHold.expired(), "SeatHold should not be expired yet");
-        // TODO: replace this with a spy to ensure that expireSeatHolds has run at least once - timing-dependent tests suck!
+        // Bugger - a Mockito spy seems to be unable to catch the fact that the expiration method was called from a separate
+        // thread (the ScheduledExecutorService), so I admit defeat for now and will keep the sleep in here. :/
         Thread.sleep(10L); // Ensure that the #expireSeatHolds method has had time to run
         assertEquals(numSeats,
-                ((TicketServiceImpl) ticketServiceWithSlowExpiration).numSeatsHeld(),
+                ticketServiceWithSlowExpiration.numSeatsHeld(),
                 "Seats should still be held"
         );
         defaultVenue.printSeats();

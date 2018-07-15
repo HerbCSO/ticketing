@@ -137,10 +137,8 @@ public final class TicketServiceImpl implements TicketService {
 
     /**
      * Removes expired {@link SeatHold}s.
-     * <p>
-     * TODO: figure out if this needs to be synchronized.
      */
-    private void expireSeatHolds() {
+    private synchronized void expireSeatHolds() {
         // This is easy, but will iterate over the entire map every time:
         //   seatHolds.entrySet().removeIf(e -> e.getValue().expired());
         // so instead we're doing this the old-fashioned way so that we can stop once we hit the first non-expired entry
