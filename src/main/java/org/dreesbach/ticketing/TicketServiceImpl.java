@@ -94,17 +94,16 @@ public final class TicketServiceImpl implements TicketService {
      * <p>
      * The returned SeatHold may have fewer seats than were requested if that many were not available.
      *
-     * @param numSeats the number of seats to find and hold
+     * @param numSeatsToHold the number of seats to find and hold
      * @param customerEmail unique identifier for the customer
      * @return either a {@link SeatHold} or {@code null} when no seats are available
      */
     @Override
-    public synchronized SeatHold findAndHoldSeats(final int numSeats, final String customerEmail) {
-        checkArgument(numSeats >= 0, "numSeats must be >= 0");
+    public synchronized SeatHold findAndHoldSeats(final int numSeatsToHold, final String customerEmail) {
+        checkArgument(numSeatsToHold > 0, "numSeatsToHold must be > 0");
         checkNotNull(customerEmail, "customerEmail cannot be null");
         checkEmailParam(customerEmail);
-        // TODO: delegate this to Venue?
-        SeatHold seatHold = new SeatHold(numSeats, venue, seatHoldExpirationTime);
+        SeatHold seatHold = venue.holdSeats(numSeatsToHold, seatHoldExpirationTime);
         if (seatHolds.containsKey(seatHold.getId())) {
             throw new IllegalStateException("Tried to allocate the same SeatHold ID [" + seatHold.getId() + "] more than once");
         }
@@ -127,6 +126,9 @@ public final class TicketServiceImpl implements TicketService {
         }
         else {
             seatHold = seatHolds.get(seatHoldId);
+            if (seatHold.expired()) {
+                throw new IllegalStateException("SeatHold ID [" + seatHoldId + "] is expired");
+            }
         }
         return venue.reserve(seatHold);
     }
@@ -139,7 +141,7 @@ public final class TicketServiceImpl implements TicketService {
      */
     private void checkEmailParam(final String customerEmail) {
         checkArgument(customerEmail.length() > MIN_EMAIL_STRING_LENGTH,
-                "C'mon, you think %s is an email address!? ;]",
+                "C'mon, you think [%s] is an email address!? ;]",
                 customerEmail
         );
     }
@@ -150,7 +152,7 @@ public final class TicketServiceImpl implements TicketService {
      * @return number of seats held
      */
     public int numSeatsHeld() {
-        // Traversing the queue every time may get slow, however other than in tests this method isn't being used yet, so
+        // Traversing the map every time may get slow, however other than in tests this method isn't being used yet, so
         // rather than prematurely optimizing this and possibly having complications from tracking a separate "numSeatsHeld"
         // count that could easily get out of sync, we'll leave this as-is for now and come back to optimizing it later if it
         // is determined to be an issue.

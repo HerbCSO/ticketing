@@ -2,6 +2,9 @@ package org.dreesbach.ticketing;
 
 import org.dreesbach.ticketing.id.IdGenerator;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +12,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * A simple {@link Venue} implementation that provides a rectangular arrangement of seats.
@@ -42,6 +46,10 @@ final class RectangularVenue implements Venue {
      * for tracking reservations.
      */
     private Map<String, List<Seat>> seatReservations;
+    /**
+     * A list of all the seats in this venue.
+     */
+    private List<Seat> seatList;
 
     /**
      * Creates a new instance.
@@ -139,16 +147,15 @@ final class RectangularVenue implements Venue {
      * on, something to watch out for in a multi-threaded web server environment, for example.
      *
      * @param numSeatsToHold the number of seats to be held
+     * @param seatHoldExpirationTime time until the SeatHold expires
      * @return the actual number of seats that could be held - could be less than what was requested, all the way down to 0
      */
-    public synchronized List<Seat> holdSeats(final int numSeatsToHold) {
-        checkArgument(numSeatsToHold >= 0, "numSeatsToHold must be >= 0");
+    public synchronized SeatHold holdSeats(final int numSeatsToHold, final Duration seatHoldExpirationTime) {
+        checkArgument(numSeatsToHold > 0, "numSeatsToHold must be > 0");
         List<Seat> bestSeats = seatPickingStrategy.pickBestAvailableSeats(this, numSeatsToHold);
-        for (Seat seat : bestSeats) {
-            seat.hold();
-        }
+        SeatHold seatHold = new SeatHold(bestSeats, seatHoldExpirationTime);
         availableNumSeats -= bestSeats.size();
-        return bestSeats;
+        return seatHold;
     }
 
     @Override
@@ -191,13 +198,26 @@ final class RectangularVenue implements Venue {
         }
     }
 
+    @Override
+    public List<Seat> getSeats() {
+        if (seatList == null) {
+            populateSeatList();
+        }
+        return seatList;
+    }
+
     /**
-     * Get the seats for this location.
+     * Populate the seat list if it hasn't been done before.
      *
-     * @return two-dimensional array of seats by row/column
+     * @return a filled list of all the seats in the venue
      */
-    public Seat[][] getSeats() {
-        return seats;
+    private List<Seat> populateSeatList() {
+        checkState(seatList == null, "seatList was already populated");
+        seatList = new ArrayList<>();
+        for (Seat[] row : seats) {
+            seatList.addAll(Arrays.asList(row));
+        }
+        return seatList;
     }
 
     @Override

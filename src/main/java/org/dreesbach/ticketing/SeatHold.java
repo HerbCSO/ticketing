@@ -5,10 +5,10 @@ import org.dreesbach.ticketing.id.IdGenerator;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -17,8 +17,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 class SeatHold {
     /** How long the seat hold is kept before expiring. */
     private static final Duration SEAT_HOLD_EXPIRATION_TIME = Duration.ofMinutes(5);
-    /** The location in which seats are being held. */
-    private final Venue venue;
     /** The expiration time of this {@code SeatHold}. */
     private Instant expirationTime;
     /** Number of seats to hold for reservation. */
@@ -26,39 +24,39 @@ class SeatHold {
     /** Unique ID of the seat hold. */
     private int id;
     /** List of seats held. */
-    private List<Seat> seatsHeld;
+    private List<Seat> seatsHeld = new ArrayList<>();
 
     /**
      * Create a new SeatHold.
      *
      * Will auto-generate an ID.
      *
-     * @param numSeatsRequested number of seats to hold
-     * @param venue the location to hold seats in
+     * @param seatsToHold list of seats to hold
      */
-    SeatHold(final int numSeatsRequested, final Venue venue) {
-        this(numSeatsRequested, venue, SEAT_HOLD_EXPIRATION_TIME);
+    SeatHold(final List<Seat> seatsToHold) {
+        this(seatsToHold, SEAT_HOLD_EXPIRATION_TIME);
     }
 
     /**
      * Create a new SeatHold with the specified expiration time.
      *
-     * @param numSeatsRequested number of seats to hold
-     * @param venue the location to hold seats in
+     * Note that we support SeatHolds with 0 seats held to enable easier handling of cases where the venue is already at full
+     * capacity, i.e. no seats are left. In that case we want to return an essentially empty SeatHold to avoid having to
+     * throw an exception or returning a null. It effectively becomes a null object in this scenario.
+     *
+     * @param seatsToHold list of seats to hold
      * @param seatHoldExpirationTime duration until the {@code SeatHold} expires
      */
-    SeatHold(final int numSeatsRequested, final Venue venue, final Duration seatHoldExpirationTime) {
-        checkArgument(numSeatsRequested >= 0, "numSeatsRequested must be > 0");
-        checkNotNull(venue, "venue cannot not be null");
+    SeatHold(final List<Seat> seatsToHold, final Duration seatHoldExpirationTime) {
+        checkNotNull(seatsToHold, "seatsToHold cannot be null");
         checkNotNull(seatHoldExpirationTime, "seatHoldExpirationTime cannot be null");
-        this.numSeatsRequested = numSeatsRequested;
-        // TODO: Do I really need to hold on to this here?
-        this.venue = venue;
+        numSeatsRequested = seatsToHold.size();
+        for (Seat seat : seatsToHold) {
+            seat.hold();
+            seatsHeld.add(seat);
+        }
         id = IdGenerator.generateUniqueIntId();
         expirationTime = Instant.now().plus(seatHoldExpirationTime);
-        // TODO: This was possibly a stupid decision - maybe I should invert the relationship and make SeatHold be instantiated
-        // by Venue instead?
-        seatsHeld = this.venue.holdSeats(numSeatsRequested);
     }
 
     /**

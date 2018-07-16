@@ -27,6 +27,7 @@ class TicketServiceImplTest {
     private static final String CUSTOMER_EMAIL = "me@you.com";
     private static final int NUM_ROWS = 3;
     private static final int NUM_COLS = 3;
+    private static final long SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS = 100L;
     private static Venue persistentDefaultVenue;
     private static TicketService persistentTicketService;
     private Venue defaultVenue;
@@ -44,6 +45,15 @@ class TicketServiceImplTest {
         SeatPickingStrategy<RectangularVenue> seatPickingStrategy = new RectangularVenueSimpleSeatPickingStrategy();
         defaultVenue = new RectangularVenue(NUM_ROWS, NUM_COLS, seatPickingStrategy);
         ticketService = new TicketServiceImpl(defaultVenue);
+    }
+
+    @Test
+    void tooShortEmail() {
+        Throwable exception = assertThrows(IllegalArgumentException.class,
+                () -> ticketService.findAndHoldSeats(2, "a"),
+                "Expected exception"
+        );
+        assertEquals("C'mon, you think [a] is an email address!? ;]", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
@@ -90,6 +100,15 @@ class TicketServiceImplTest {
         );
     }
 
+    @Test
+    void holdZeroSeatsThrowsException() {
+        Throwable exception = assertThrows(IllegalArgumentException.class,
+                () -> ticketService.findAndHoldSeats(0, CUSTOMER_EMAIL),
+                "Exception expected"
+        );
+        assertEquals("numSeatsToHold must be > 0", exception.getMessage(), "Wrong exception message");
+    }
+
     /**
      * This test version is actually a bit more complicated than the non-parameterized version since it:
      * <ol>
@@ -107,7 +126,7 @@ class TicketServiceImplTest {
      */
     @DisplayName("Multiple seat holds")
     @ParameterizedTest(name = "[{0}] requested seats should have held [{1}], now [{2}] seats available in venue")
-    @CsvSource({ "2, 2, 7", "0, 0, 7", "1, 1, 6", "3, 3, 3", "4, 3, 0", "1, 0, 0", "0, 0, 0" })
+    @CsvSource({ "2, 2, 7", "1, 1, 6", "3, 3, 3", "4, 3, 0", "1, 0, 0" })
     void multipleSeatHoldRequests(int numSeatsRequested, int numSeatsExpected, int expectedNumSeatsAvailable) {
         SeatHold seatHold = persistentTicketService.findAndHoldSeats(numSeatsRequested, "email" + numSeatsRequested);
         persistentDefaultVenue.printSeats();
@@ -134,8 +153,7 @@ class TicketServiceImplTest {
         assertEquals("seatHoldId must be > 0", exception.getMessage(), "Exception message didn't match expectation");
         int id = IdGenerator.generateUniqueIntId();
         exception = assertThrows(IllegalStateException.class, () -> ticketService.reserveSeats(id, "test"));
-        assertEquals(
-                "SeatHold ID [" + id + "] not found",
+        assertEquals("SeatHold ID [" + id + "] not found",
                 exception.getMessage(),
                 "Exception message didn't match " + "expectation"
         );
@@ -147,12 +165,25 @@ class TicketServiceImplTest {
         TicketService ticketServiceWithImmediateExpiration = new TicketServiceImpl(defaultVenue, 1L, Duration.ZERO);
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertTrue(seatHold.expired(), "SeatHold should expire immediately");
-        Thread.sleep(10L); // Ensure that the #expireSeatHolds method has had time to run
+        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time to run
         assertEquals(0,
                 ((TicketServiceImpl) ticketServiceWithImmediateExpiration).numSeatsHeld(),
                 "No seats should be held anymore"
         );
         defaultVenue.printSeats();
+    }
+
+    @Test
+    void reserveExpiredSeats() throws InterruptedException {
+        TicketService ticketServiceWithImmediateExpiration = new TicketServiceImpl(defaultVenue, 1L, Duration.ZERO);
+        SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
+        assertTrue(seatHold.expired(), "SeatHold should expire immediately");
+        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time to run
+        Throwable exception = assertThrows(IllegalStateException.class,
+                () -> ticketServiceWithImmediateExpiration.reserveSeats(seatHold.getId(), CUSTOMER_EMAIL),
+                "Expected exception"
+        );
+        assertEquals("SeatHold ID [" + seatHold.getId() + "] not found", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
@@ -163,7 +194,7 @@ class TicketServiceImplTest {
         assertFalse(seatHold.expired(), "SeatHold should not be expired yet");
         // Bugger - a Mockito spy seems to be unable to catch the fact that the expiration method was called from a separate
         // thread (the ScheduledExecutorService), so I admit defeat for now and will keep the sleep in here. :/
-        Thread.sleep(10L); // Ensure that the #expireSeatHolds method has had time to run
+        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time to run
         assertEquals(numSeats, ticketServiceWithSlowExpiration.numSeatsHeld(), "Seats should still be held");
         defaultVenue.printSeats();
     }
@@ -179,7 +210,7 @@ class TicketServiceImplTest {
         int counter = 0;
         while (venue.getAvailableNumSeats() > 0) {
             String email = "email" + counter;
-            seatHolds.put(email, localTicketService.findAndHoldSeats(rnd.nextInt(20), email));
+            seatHolds.put(email, localTicketService.findAndHoldSeats(rnd.nextInt(20) + 1, email));
             counter++;
             if (counter % 1000 == 0) {
                 System.out.println(counter + " SeatHolds created");

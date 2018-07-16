@@ -5,6 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
@@ -16,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SeatHoldTest {
 
+    private static final List<Seat> SEATS_TO_HOLD = Arrays.asList(new SeatImpl[]{
+            new SeatImpl("seat1", 1.0), new SeatImpl("seat2", 2.0)
+    });
     private RectangularVenue venue;
 
     @BeforeEach
@@ -27,26 +34,26 @@ class SeatHoldTest {
     @Test
     void getNumSeats() {
         int numSeatsToRequest = 2;
-        SeatHold seatHold = new SeatHold(numSeatsToRequest, venue);
+        SeatHold seatHold = new SeatHold(SEATS_TO_HOLD);
         assertEquals(numSeatsToRequest, seatHold.getNumSeatsHeld(), "Number of seats held should equal requested seats");
     }
 
     @Test
     void testHoldingZeroSeats() {
-        int numSeatsToRequest = 0;
-        SeatHold seatHold = new SeatHold(numSeatsToRequest, venue);
-        assertEquals(numSeatsToRequest, seatHold.getNumSeatsHeld(), "Number of seats held should equal requested seats (0)");
+        SeatHold seatHold = new SeatHold(Collections.emptyList());
+        assertEquals(0, seatHold.getNumSeatsRequested(), "Number of seats held should equal requested seats (0)");
     }
 
     @Test
     void testHoldingNegativeSeats() {
-        Throwable exception = assertThrows(IllegalArgumentException.class, () -> new SeatHold(-1, venue), "Exception expected");
-        assertEquals("numSeatsRequested must be > 0", exception.getMessage(), "Wrong exception message");
+        Throwable exception =
+                assertThrows(IllegalArgumentException.class, () -> venue.holdSeats(-1, Duration.ZERO), "Exception expected");
+        assertEquals("numSeatsToHold must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
     void requestMoreSeatsThanAvailable() {
-        SeatHold seatHold = new SeatHold(1_000_000, venue);
+        SeatHold seatHold = new SeatHold(venue.getSeats());
         assertEquals(
                 venue.getTotalNumSeats(),
                 seatHold.getNumSeatsHeld(),
@@ -56,20 +63,20 @@ class SeatHoldTest {
 
     @Test
     void getId() {
-        SeatHold seatHold = new SeatHold(2, venue);
+        SeatHold seatHold = venue.holdSeats(2, Duration.ZERO);
         assertThat("Generated ID should be > 0", seatHold.getId(), greaterThan(0));
     }
 
     @Test
     void expired() throws InterruptedException {
-        SeatHold seatHold = new SeatHold(2, venue, Duration.ZERO);
+        SeatHold seatHold = venue.holdSeats(2, Duration.ZERO);
         Thread.sleep(10L); // the test fails intermittently without this, since the expiration happens in a separate thread
         assertTrue(seatHold.expired(), "SeatHold should be expired immediately");
     }
 
     @Test
     void remove() {
-        SeatHold seatHold = new SeatHold(2, venue);
+        SeatHold seatHold = venue.holdSeats(2, Duration.ZERO);
         int id = seatHold.getId();
         seatHold.remove();
         assertAll(

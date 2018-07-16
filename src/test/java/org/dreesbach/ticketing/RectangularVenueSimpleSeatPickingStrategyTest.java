@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -222,9 +223,11 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
 
     @Test
     void holdNegativeNumberOfSeatsThrowsException() {
-        Throwable exception =
-                assertThrows(IllegalArgumentException.class, () -> venue.holdSeats(-1), "Expected exception " + "thrown");
-        assertEquals("numSeatsToHold must be >= 0", exception.getMessage(), "Wrong exception message");
+        Throwable exception = assertThrows(IllegalArgumentException.class,
+                () -> venue.holdSeats(-1, Duration.ZERO),
+                "Expected exception " + "thrown"
+        );
+        assertEquals("numSeatsToHold must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
@@ -232,7 +235,7 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
         int numRows = 9, numCols = 11;
         venue = new RectangularVenue(numRows, numCols, seatPickingStrategy);
         for (int i = 0; i < numRows * numCols; i++) {
-            venue.holdSeats(1);
+            venue.holdSeats(1, Duration.ZERO);
             venue.printSeats();
         }
     }
@@ -240,7 +243,7 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     @Test
     void reserveSeat() {
         int numSeatsToReserve = 2;
-        SeatHold seatHold = new SeatHold(numSeatsToReserve, venue);
+        SeatHold seatHold = venue.holdSeats(numSeatsToReserve, Duration.ZERO);
         String reservationCode = venue.reserve(seatHold);
         assertAll("Check postconditions", () -> assertEquals(venue.getTotalNumSeats() - numSeatsToReserve,
                 venue.getAvailableNumSeats(),
@@ -252,8 +255,7 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     void reservationCodeLength() {
         Throwable exception =
                 assertThrows(IllegalArgumentException.class, () -> venue.cancelReservation("BAD"), "Expected exception thrown");
-        assertEquals(
-                "Expected a " + IdGenerator.MAX_RESERVATION_CODE_LENGTH + "-character reservation code",
+        assertEquals("Expected a " + IdGenerator.MAX_RESERVATION_CODE_LENGTH + "-character reservation code",
                 exception.getMessage(),
                 "Wrong exception message"
         );
@@ -262,7 +264,7 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     @Test
     void cancelReservation() {
         int numSeatsToReserve = 2;
-        SeatHold seatHold = new SeatHold(numSeatsToReserve, venue);
+        SeatHold seatHold = venue.holdSeats(numSeatsToReserve, Duration.ZERO);
         String reservationCode = venue.reserve(seatHold);
         venue.cancelReservation(reservationCode);
         assertEquals(venue.getTotalNumSeats(), venue.getAvailableNumSeats(), "All seats should be available again");

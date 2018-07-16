@@ -55,11 +55,9 @@ public class RectangularVenueSimpleSeatPickingStrategy implements SeatPickingStr
         checkNotNull(venue, "venue should not be null");
         seatQueueBestToWorst =
                 new PriorityBlockingQueue<>(venue.getTotalNumSeats(), Comparator.comparingDouble(Seat::seatGoodness));
-        Seat[][] seats = venue.getSeats();
-        for (Seat[] seatRow : seats) {
-            for (Seat seat : seatRow) {
-                seatQueueBestToWorst.add(seat);
-            }
+        List<Seat> seats = venue.getSeats();
+        for (Seat seat : seats) {
+            seatQueueBestToWorst.add(seat);
         }
     }
 }

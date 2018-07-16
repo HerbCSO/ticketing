@@ -1,5 +1,6 @@
 package org.dreesbach.ticketing;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -25,9 +26,10 @@ public interface Venue {
      * Hold a desired number of seats. Returns best available selection.
      *
      * @param numSeatsToHold the number of seats desired
+     * @param seatHoldExpirationTime time until the SeatHold expires
      * @return number of seats available to hold - may be 0 if none were available
      */
-    List<Seat> holdSeats(int numSeatsToHold);
+    SeatHold holdSeats(int numSeatsToHold, Duration seatHoldExpirationTime);
 
     /**
      * Remove a prior SeatHold (e.g. when it expires).
@@ -57,6 +59,13 @@ public interface Venue {
      * @param reservationCode the unique reservation code to cancel
      */
     void cancelReservation(String reservationCode);
+
+    /**
+     * Get a list of all the seats at the venue.
+     *
+     * @return a list of all the seats
+     */
+    List<Seat> getSeats();
 
     /**
      * Print out the current status of all seats. Simply a convenience method to be able to quickly see what the venue looks
