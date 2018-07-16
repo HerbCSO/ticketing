@@ -123,19 +123,19 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     @DisplayName("Column goodness scores")
     @ParameterizedTest(name = "Column [{1}] out of [{0}] should have a score of [{2}]")
     @CsvSource({
-            "1, 0, '-0.0'",
-            "10, 9, '4.5'",
-            "2, 0, '-0.5'",
-            "2, 1, '0.5'",
-            "5, 0, '-2.0'",
-            "5, 1, '-1.0'",
-            "5, 2, '-0.0'",
-            "5, 3, '1.0'",
-            "5, 4, '2.0'",
-            "4, 0, '-1.5'",
-            "4, 1, '-0.5'",
-            "4, 2, '0.5'",
-            "4, 3, '1.5'"
+            "1, 0, '0.0'",
+            "10, 9, '-4.5'",
+            "2, 0, '0.5'",
+            "2, 1, '-0.5'",
+            "5, 0, '2.0'",
+            "5, 1, '1.0'",
+            "5, 2, '0.0'",
+            "5, 3, '-1.0'",
+            "5, 4, '-2.0'",
+            "4, 0, '1.5'",
+            "4, 1, '0.5'",
+            "4, 2, '-0.5'",
+            "4, 3, '-1.5'"
     })
     void xPosition(int numSeatsPerRow, int column, float expectedXPosition) {
         venue = new RectangularVenue(1, numSeatsPerRow, seatPickingStrategy);
@@ -161,35 +161,35 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     @ParameterizedTest(name = "Seat [{2}, {3}] out of [{0}, {1}] should have goodness score of [{4}]")
     @CsvSource({
             "1, 1, 0, 0, 0.0",
-            "2, 2, 0, 0, 0.5",
-            "2, 2, 0, 1, 0.5",
-            "2, 2, 1, 0, 1.118033988749895",
-            "2, 2, 1, 1, 1.118033988749895",
+            "2, 2, 0, 0, 0.25",
+            "2, 2, 0, 1, 0.25",
+            "2, 2, 1, 0, 1.25",
+            "2, 2, 1, 1, 1.25",
             "3, 3, 0, 0, 1.0",
             "3, 3, 0, 1, 0.0",
             "3, 3, 0, 2, 1.0",
-            "3, 3, 1, 0, 1.4142135623730951",
+            "3, 3, 1, 0, 2.0",
             "3, 3, 1, 1, 1.0",
-            "3, 3, 1, 2, 1.4142135623730951",
-            "3, 3, 2, 0, 2.23606797749979",
-            "3, 3, 2, 1, 2.0",
-            "3, 3, 2, 2, 2.23606797749979",
-            "4, 4, 0, 0, 1.5",
-            "4, 4, 0, 1, 0.5",
-            "4, 4, 0, 2, 0.5",
-            "4, 4, 0, 3, 1.5",
-            "4, 4, 1, 0, 1.8027756377319946",
-            "4, 4, 1, 1, 1.118033988749895",
-            "4, 4, 1, 2, 1.118033988749895",
-            "4, 4, 1, 3, 1.8027756377319946",
-            "4, 4, 2, 0, 2.5",
-            "4, 4, 2, 1, 2.0615528128088303",
-            "4, 4, 2, 2, 2.0615528128088303",
-            "4, 4, 2, 3, 2.5",
-            "4, 4, 3, 0, 3.3541019662496847",
-            "4, 4, 3, 1, 3.0413812651491097",
-            "4, 4, 3, 2, 3.0413812651491097",
-            "4, 4, 3, 3, 3.3541019662496847",
+            "3, 3, 1, 2, 2.0",
+            "3, 3, 2, 0, 5.0",
+            "3, 3, 2, 1, 4.0",
+            "3, 3, 2, 2, 5.0",
+            "4, 4, 0, 0, 2.25",
+            "4, 4, 0, 1, 0.25",
+            "4, 4, 0, 2, 0.25",
+            "4, 4, 0, 3, 2.25",
+            "4, 4, 1, 0, 3.25",
+            "4, 4, 1, 1, 1.25",
+            "4, 4, 1, 2, 1.25",
+            "4, 4, 1, 3, 3.25",
+            "4, 4, 2, 0, 6.25",
+            "4, 4, 2, 1, 4.25",
+            "4, 4, 2, 2, 4.25",
+            "4, 4, 2, 3, 6.25",
+            "4, 4, 3, 0, 11.25",
+            "4, 4, 3, 1, 9.25",
+            "4, 4, 3, 2, 9.25",
+            "4, 4, 3, 3, 11.25",
     })
     void seatGoodness(int rows, int numSeatsPerRow, int row, int column, float expectedGoodness) {
         venue = new RectangularVenue(rows, numSeatsPerRow, seatPickingStrategy);
@@ -229,8 +229,9 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
 
     @Test
     void displaySeatHoldProgress() {
-        venue = new RectangularVenue(10, 30, seatPickingStrategy);
-        for (int i = 0; i < 300; i++) {
+        int numRows = 9, numCols = 11;
+        venue = new RectangularVenue(numRows, numCols, seatPickingStrategy);
+        for (int i = 0; i < numRows * numCols; i++) {
             venue.holdSeats(1);
             venue.printSeats();
         }

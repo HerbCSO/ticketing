@@ -9,7 +9,6 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.Math.sqrt;
 
 /**
  * A simple {@link Venue} implementation that provides a rectangular arrangement of seats.
@@ -93,7 +92,7 @@ final class RectangularVenue implements Venue {
     double getGoodness(final int row, final int col) {
         checkArgument(row >= 0 && row < numRows, "row must be between %s and %s (inclusive)", 0, numRows - 1);
         checkArgument(col >= 0 && col < seatsPerRow, "col must be between %s and %s (inclusive)", 0, seatsPerRow - 1);
-        return sqrt(getYPosition(row) * getYPosition(row) + getXPosition(col) * getXPosition(col));
+        return getYPosition(row) * getYPosition(row) + getXPosition(col) * getXPosition(col);
     }
 
     /**
@@ -115,7 +114,7 @@ final class RectangularVenue implements Venue {
      */
     double getXPosition(final int col) {
         checkArgument(col >= 0 && col < seatsPerRow, "col must be between %s and %s (inclusive)", 0, seatsPerRow - 1);
-        return -(((double) (seatsPerRow - 1) / 2) - col);
+        return ((double) (seatsPerRow - 1) / 2) - col;
     }
 
     /**
