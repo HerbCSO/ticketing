@@ -2,6 +2,7 @@ package org.dreesbach.ticketing.id;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,18 @@ public final class IdGenerator {
      * cache like memcached wrapping one of these to improve speed).
      */
     public static final int MAX_RESERVATION_CODE_LENGTH = 6;
+    /**
+     * Max number of calls to the {@ref rng} to allow before re-seeding it.
+     */
+    private static final int MAX_CALL_COUNT_BEFORE_RESET = 10_000;
+    /**
+     * Random number generator for this class.
+     */
+    private static SecureRandom rng = new SecureRandom();
+    /**
+     * Keeps track of the number of times the {@ref rng} was called.
+     */
+    private static int callCounter = 0;
 
     /**
      * Make utility class non-instantiable.
@@ -48,9 +61,10 @@ public final class IdGenerator {
      * @return a unique integer ID
      */
     public static int generateUniqueIntId() {
-        int randomNum = new SecureRandom().nextInt(Integer.MAX_VALUE);
+        reseedRng();
+        int randomNum = rng.nextInt(Integer.MAX_VALUE);
         while (!IDS_IN_USE.add(randomNum)) {
-            randomNum = new SecureRandom().nextInt(Integer.MAX_VALUE);
+            randomNum = rng.nextInt(Integer.MAX_VALUE);
         }
         return randomNum;
     }
@@ -61,6 +75,7 @@ public final class IdGenerator {
      * @return a {@value MAX_RESERVATION_CODE_LENGTH} character string for the reservation code
      */
     public static String generateReservationCode() {
+        reseedRng();
         String reservationCode = internalGenerateReservationCode();
         while (!RESERVATION_IDS_IN_USE.add(reservationCode)) {
             reservationCode = internalGenerateReservationCode();
@@ -81,7 +96,7 @@ public final class IdGenerator {
      */
     private static String internalGenerateReservationCode() {
         byte[] bytes = new byte[MAX_RESERVATION_CODE_LENGTH + 1];
-        new SecureRandom().nextBytes(bytes);
+        rng.nextBytes(bytes);
         BigInteger bigInteger = new BigInteger(bytes).abs();
         return bigInteger.toString(Character.MAX_RADIX).toUpperCase().substring(0, MAX_RESERVATION_CODE_LENGTH);
     }
@@ -126,5 +141,15 @@ public final class IdGenerator {
      */
     public static boolean retireReservationId(final String id) {
         return RESERVATION_IDS_IN_USE.remove(id);
+    }
+
+    /**
+     * Utility method to re-seed the {@ref rng}.
+     */
+    private static void reseedRng() {
+        if (callCounter % MAX_CALL_COUNT_BEFORE_RESET == 0) {
+            rng.setSeed(Instant.now().getEpochSecond());
+            callCounter = 0;
+        }
     }
 }
