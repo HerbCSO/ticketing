@@ -19,6 +19,7 @@ import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RectangularVenueSimpleSeatPickingStrategyTest {
 
@@ -289,5 +290,15 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
                 () -> venue.cancelReservation(reservationCode),
                 "Venue should no longer know about this reservation code"
         );
+    }
+
+    @Test
+    void cancelledReservationIsAvailableForHoldAgain() {
+        int numSeatsToReserve = 2;
+        SeatHold seatHold = venue.holdSeats(numSeatsToReserve, Duration.ZERO);
+        List<Seat> heldSeats = seatHold.getSeatsHeld();
+        String reservationCode = venue.reserve(seatHold);
+        venue.cancelReservation(reservationCode);
+        assertTrue(seatHold.getSeatsHeld().stream().allMatch(Seat::isAvailable), "Not all seats are available");
     }
 }
