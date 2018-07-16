@@ -28,6 +28,7 @@ class TicketServiceImplTest {
     private static final int NUM_ROWS = 3;
     private static final int NUM_COLS = 3;
     private static final long SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS = 100L;
+    private static final Duration DEFAULT_SEAT_HOLD_CHECK_DURATION = Duration.ofMillis(1);
     private static Venue persistentDefaultVenue;
     private static TicketService persistentTicketService;
     private Venue defaultVenue;
@@ -162,7 +163,8 @@ class TicketServiceImplTest {
 
     @Test
     void ensureSeatHoldsExpire() throws InterruptedException {
-        TicketService ticketServiceWithImmediateExpiration = new TicketServiceImpl(defaultVenue, 1L, Duration.ZERO);
+        TicketService ticketServiceWithImmediateExpiration = new TicketServiceImpl(defaultVenue,
+                DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ZERO);
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertTrue(seatHold.expired(), "SeatHold should expire immediately");
         Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time to run
@@ -175,7 +177,8 @@ class TicketServiceImplTest {
 
     @Test
     void reserveExpiredSeats() throws InterruptedException {
-        TicketService ticketServiceWithImmediateExpiration = new TicketServiceImpl(defaultVenue, 1L, Duration.ZERO);
+        TicketService ticketServiceWithImmediateExpiration = new TicketServiceImpl(defaultVenue,
+                DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ZERO);
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertTrue(seatHold.expired(), "SeatHold should expire immediately");
         Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time to run
@@ -189,7 +192,8 @@ class TicketServiceImplTest {
     @Test
     void ensureSeatHoldsDoNotExpireTooSoon() throws InterruptedException {
         final int numSeats = 2;
-        TicketServiceImpl ticketServiceWithSlowExpiration = new TicketServiceImpl(defaultVenue, 1L, Duration.ofDays(1));
+        TicketServiceImpl ticketServiceWithSlowExpiration = new TicketServiceImpl(defaultVenue,
+                DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ofDays(1));
         SeatHold seatHold = ticketServiceWithSlowExpiration.findAndHoldSeats(numSeats, CUSTOMER_EMAIL);
         assertFalse(seatHold.expired(), "SeatHold should not be expired yet");
         // Bugger - a Mockito spy seems to be unable to catch the fact that the expiration method was called from a separate
@@ -203,7 +207,7 @@ class TicketServiceImplTest {
     void stadiumSizedVenue() {
         SeatPickingStrategy<RectangularVenue> seatPickingStrategy = new RectangularVenueSimpleSeatPickingStrategy();
         Venue venue = new RectangularVenue(100, 1_000, seatPickingStrategy);
-        TicketService localTicketService = new TicketServiceImpl(venue, 500, Duration.ofSeconds(2));
+        TicketService localTicketService = new TicketServiceImpl(venue, Duration.ofMillis(500), Duration.ofSeconds(2));
         SecureRandom rnd = new SecureRandom();
         rnd.setSeed(Instant.now().getEpochSecond());
         Map<String, SeatHold> seatHolds = new HashMap<>();

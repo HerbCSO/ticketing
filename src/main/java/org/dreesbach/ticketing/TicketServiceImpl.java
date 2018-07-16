@@ -20,7 +20,7 @@ public final class TicketServiceImpl implements TicketService {
      * How often (in seconds) to check {@link SeatHold} expiration. This can be tuned a bit if there are lots of seat holds and
      * we don't care if the holds aren't removed immediately, but want to prioritize throughput of new holds.
      */
-    private static final long CHECK_SEAT_HOLD_EXPIRATION_MILLISECONDS = 1_000L;
+    private static final Duration CHECK_SEAT_HOLD_EXPIRATION_DURATION = Duration.ofSeconds(1);
     /**
      * Default seat hold expiration time.
      */
@@ -55,20 +55,24 @@ public final class TicketServiceImpl implements TicketService {
      * @param venue an implementation of {@link Venue}
      */
     TicketServiceImpl(final Venue venue) {
-        this(venue, CHECK_SEAT_HOLD_EXPIRATION_MILLISECONDS, DEFAULT_SEAT_HOLD_EXPIRATION_TIME);
+        this(venue, CHECK_SEAT_HOLD_EXPIRATION_DURATION, DEFAULT_SEAT_HOLD_EXPIRATION_TIME);
     }
 
     /**
      * Constructor allowing specification of seat hold expiration time.
      *
      * @param venue an implementation of {@link Venue}
-     * @param seatHoldCheckExpirationMilliseconds how often we should check for seat hold expiration
+     * @param seatHoldCheckExpiration how often we should check for seat hold expiration
      * @param seatHoldExpirationTime how long until a {@link SeatHold} expires
      */
     TicketServiceImpl(
-            final Venue venue, final long seatHoldCheckExpirationMilliseconds, final Duration seatHoldExpirationTime
+            final Venue venue, final Duration seatHoldCheckExpiration, final Duration seatHoldExpirationTime
     ) {
-        checkArgument(seatHoldCheckExpirationMilliseconds > 0, "seatHoldCheckExpirationMilliseconds must be > 0");
+        checkNotNull(seatHoldCheckExpiration, "seatHoldCheckExpiration must not be null");
+        checkArgument(
+                !(seatHoldCheckExpiration.isNegative() || seatHoldCheckExpiration.isZero()),
+                "seatHoldCheckExpiration must be > 0"
+        );
         this.venue = checkNotNull(venue, "venue cannot be null");
         this.seatHoldExpirationTime = checkNotNull(seatHoldExpirationTime, "seatHoldExpirationTime cannot be null");
         // We assign a map sized as per the total capacity of the venue, meaning we can support SeatHolds of size 1 for
@@ -78,7 +82,7 @@ public final class TicketServiceImpl implements TicketService {
         // We don't want executions to pile up, so we use scheduleWithFixedDelay rather than scheduleAtFixedRate
         seatHoldExpiration.scheduleWithFixedDelay(this::expireSeatHolds,
                 0L,
-                seatHoldCheckExpirationMilliseconds,
+                seatHoldCheckExpiration.toMillis(),
                 TimeUnit.MILLISECONDS
         );
     }
@@ -170,7 +174,7 @@ public final class TicketServiceImpl implements TicketService {
         // This is easy, but will iterate over the entire map every time:
         //   seatHolds.entrySet().removeIf(e -> e.getValue().expired());
         // so instead we're doing this the old-fashioned way so that we can stop once we hit the first non-expired entry
-        for (Iterator<Map.Entry<Integer, SeatHold>> it = seatHolds.entrySet().iterator(); it.hasNext();) {
+        for (Iterator<Map.Entry<Integer, SeatHold>> it = seatHolds.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<Integer, SeatHold> entry = it.next();
             if (entry.getValue().expired()) {
                 venue.removeHold(entry.getValue());
