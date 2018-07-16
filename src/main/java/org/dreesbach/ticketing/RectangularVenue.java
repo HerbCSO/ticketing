@@ -211,7 +211,7 @@ final class RectangularVenue implements Venue {
      *
      * @return a filled list of all the seats in the venue
      */
-    private List<Seat> populateSeatList() {
+    List<Seat> populateSeatList() {
         checkState(seatList == null, "seatList was already populated");
         seatList = new ArrayList<>();
         for (Seat[] row : seats) {

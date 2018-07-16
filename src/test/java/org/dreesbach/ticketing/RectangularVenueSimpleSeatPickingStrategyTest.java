@@ -301,4 +301,14 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
         venue.cancelReservation(reservationCode);
         assertTrue(seatHold.getSeatsHeld().stream().allMatch(Seat::isAvailable), "Not all seats are available");
     }
+
+    @Test
+    void seatListOnlyPopulatedOnce() {
+        venue.populateSeatList();
+        Throwable exception = assertThrows(IllegalStateException.class,
+                () -> venue.populateSeatList(),
+                "Seat list should only be populated once"
+        );
+        assertEquals("seatList was already populated", exception.getMessage(), "Wrong exception message");
+    }
 }
