@@ -7,7 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -231,11 +234,25 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     }
 
     @Test
-    void displaySeatHoldProgress() {
+    void displaySeatHoldProgress() throws NoSuchAlgorithmException {
+        List<String> reservationIds = new ArrayList<>();
+        SecureRandom rnd = SecureRandom.getInstanceStrong();
+        rnd.setSeed(Instant.now().getEpochSecond());
         int numRows = 9, numCols = 11;
         venue = new RectangularVenue(numRows, numCols, seatPickingStrategy);
+        List<SeatHold> seatHolds = new ArrayList<>();
         for (int i = 0; i < numRows * numCols; i++) {
-            venue.holdSeats(1, Duration.ZERO);
+            seatHolds.add(venue.holdSeats(rnd.nextInt(4) + 1, Duration.ofSeconds(2)));
+            if (rnd.nextFloat() > 0.1 && !seatHolds.isEmpty()) {
+                final int index = rnd.nextInt(seatHolds.size());
+                reservationIds.add(venue.reserve(seatHolds.get(index)));
+                seatHolds.remove(index);
+            }
+            if (rnd.nextFloat() > 0.95 && !reservationIds.isEmpty()) {
+                final int index = rnd.nextInt(reservationIds.size());
+                venue.cancelReservation(reservationIds.get(index));
+                reservationIds.remove(index);
+            }
             venue.printSeats();
         }
     }
