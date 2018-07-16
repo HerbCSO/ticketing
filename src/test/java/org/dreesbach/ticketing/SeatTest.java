@@ -28,6 +28,26 @@ class SeatTest {
     }
 
     @Test
+    void isHeld() {
+        assertEquals(false, seat.isHeld(), "Seat should start out as available");
+    }
+
+    @Test
+    void goodnessForcedToBePositive() {
+        Throwable exception =
+                assertThrows(IllegalArgumentException.class, () -> new SeatImpl("test", -1), "Exception expected");
+        assertEquals("goodness should be a positive value", exception.getMessage(), "Wrong exception message");
+    }
+
+    @Test
+    void idNotNull() {
+        Throwable exception =
+                assertThrows(NullPointerException.class, () -> new SeatImpl(null, 1), "Exception expected");
+        assertEquals("id should not be null", exception.getMessage(), "Wrong exception message");
+
+    }
+
+    @Test
     void hold() {
         seat.hold();
         assertAll(

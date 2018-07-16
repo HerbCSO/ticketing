@@ -27,7 +27,7 @@ class TicketServiceImplTest {
     private static final String CUSTOMER_EMAIL = "me@you.com";
     private static final int NUM_ROWS = 3;
     private static final int NUM_COLS = 3;
-    private static final long SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS = 100L;
+    private static final long WAIT_FOR_EXPIRATION_IN_MS = 100L;
     private static final Duration DEFAULT_SEAT_HOLD_CHECK_DURATION = Duration.ofMillis(1);
     private static Venue persistentDefaultVenue;
     private static TicketService persistentTicketService;
@@ -176,8 +176,7 @@ class TicketServiceImplTest {
                 new TicketServiceImpl(defaultVenue, DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ZERO);
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertTrue(seatHold.expired(), "SeatHold should expire immediately");
-        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time
-        // to run
+        Thread.sleep(WAIT_FOR_EXPIRATION_IN_MS); // Ensure that the #expireSeatHolds method has had time to run
         assertEquals(0,
                 ((TicketServiceImpl) ticketServiceWithImmediateExpiration).numSeatsHeld(),
                 "No seats should be held anymore"
@@ -191,8 +190,7 @@ class TicketServiceImplTest {
                 new TicketServiceImpl(defaultVenue, DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ZERO);
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertTrue(seatHold.expired(), "SeatHold should expire immediately");
-        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time
-        // to run
+        Thread.sleep(WAIT_FOR_EXPIRATION_IN_MS); // Ensure that the #expireSeatHolds method has had time to run
         Throwable exception = assertThrows(IllegalStateException.class,
                 () -> ticketServiceWithImmediateExpiration.reserveSeats(seatHold.getId(), CUSTOMER_EMAIL),
                 "Expected exception"
@@ -209,7 +207,7 @@ class TicketServiceImplTest {
         assertFalse(seatHold.expired(), "SeatHold should not be expired yet");
         // Bugger - a Mockito spy seems to be unable to catch the fact that the expiration method was called from a separate
         // thread (the ScheduledExecutorService), so I admit defeat for now and will keep the sleep in here. :/
-        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time
+        Thread.sleep(WAIT_FOR_EXPIRATION_IN_MS); // Ensure that the #expireSeatHolds method has had time
         // to run
         assertEquals(numSeats, ticketServiceWithSlowExpiration.numSeatsHeld(), "Seats should still be held");
         defaultVenue.printSeats();
