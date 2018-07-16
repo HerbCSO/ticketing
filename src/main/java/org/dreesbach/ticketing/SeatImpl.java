@@ -47,7 +47,7 @@ public final class SeatImpl implements Seat {
     }
 
     @Override
-    public void hold() {
+    public synchronized void hold() {
         checkState(available, "Cannot hold an unavailable seat");
         checkState(!reserved, "Seat was already reserved");
         available = false;
@@ -60,7 +60,7 @@ public final class SeatImpl implements Seat {
     }
 
     @Override
-    public void cancelHold() {
+    public synchronized void cancelHold() {
         // If the seat was already available before this call, we want to throw an exception because we want to know whether
         // we're releasing seats multiple times.
         checkState(!available, "Seat was already available");
@@ -70,7 +70,7 @@ public final class SeatImpl implements Seat {
     }
 
     @Override
-    public void reserve() {
+    public synchronized void reserve() {
         checkState(!available, "Seat was still marked as available");
         checkState(!reserved, "Seat was already reserved");
         available = false;
@@ -78,7 +78,7 @@ public final class SeatImpl implements Seat {
     }
 
     @Override
-    public void cancelReservation() {
+    public synchronized void cancelReservation() {
         checkState(!available, "Seat was still marked as available");
         checkState(reserved, "Seat was not reserved");
         available = true;
