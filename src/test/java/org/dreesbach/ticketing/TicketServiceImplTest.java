@@ -110,6 +110,15 @@ class TicketServiceImplTest {
         assertEquals("numSeatsToHold must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
+    @Test
+    void negativeSeatHoldExpirationTimeThrowsException() {
+        Throwable exception = assertThrows(IllegalArgumentException.class,
+                () -> new TicketServiceImpl(defaultVenue, Duration.ofSeconds(-1), Duration.ZERO),
+                "Exception expected"
+        );
+        assertEquals("seatHoldCheckExpiration must be > 0", exception.getMessage(), "Wrong exception message");
+    }
+
     /**
      * This test version is actually a bit more complicated than the non-parameterized version since it:
      * <ol>
@@ -163,11 +172,12 @@ class TicketServiceImplTest {
 
     @Test
     void ensureSeatHoldsExpire() throws InterruptedException {
-        TicketService ticketServiceWithImmediateExpiration = new TicketServiceImpl(defaultVenue,
-                DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ZERO);
+        TicketService ticketServiceWithImmediateExpiration =
+                new TicketServiceImpl(defaultVenue, DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ZERO);
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertTrue(seatHold.expired(), "SeatHold should expire immediately");
-        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time to run
+        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time
+        // to run
         assertEquals(0,
                 ((TicketServiceImpl) ticketServiceWithImmediateExpiration).numSeatsHeld(),
                 "No seats should be held anymore"
@@ -177,11 +187,12 @@ class TicketServiceImplTest {
 
     @Test
     void reserveExpiredSeats() throws InterruptedException {
-        TicketService ticketServiceWithImmediateExpiration = new TicketServiceImpl(defaultVenue,
-                DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ZERO);
+        TicketService ticketServiceWithImmediateExpiration =
+                new TicketServiceImpl(defaultVenue, DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ZERO);
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertTrue(seatHold.expired(), "SeatHold should expire immediately");
-        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time to run
+        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time
+        // to run
         Throwable exception = assertThrows(IllegalStateException.class,
                 () -> ticketServiceWithImmediateExpiration.reserveSeats(seatHold.getId(), CUSTOMER_EMAIL),
                 "Expected exception"
@@ -192,13 +203,14 @@ class TicketServiceImplTest {
     @Test
     void ensureSeatHoldsDoNotExpireTooSoon() throws InterruptedException {
         final int numSeats = 2;
-        TicketServiceImpl ticketServiceWithSlowExpiration = new TicketServiceImpl(defaultVenue,
-                DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ofDays(1));
+        TicketServiceImpl ticketServiceWithSlowExpiration =
+                new TicketServiceImpl(defaultVenue, DEFAULT_SEAT_HOLD_CHECK_DURATION, Duration.ofDays(1));
         SeatHold seatHold = ticketServiceWithSlowExpiration.findAndHoldSeats(numSeats, CUSTOMER_EMAIL);
         assertFalse(seatHold.expired(), "SeatHold should not be expired yet");
         // Bugger - a Mockito spy seems to be unable to catch the fact that the expiration method was called from a separate
         // thread (the ScheduledExecutorService), so I admit defeat for now and will keep the sleep in here. :/
-        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time to run
+        Thread.sleep(SEAT_HOLD_EXPIRATION_RUN_WAIT_TIME_IN_MILLIS); // Ensure that the #expireSeatHolds method has had time
+        // to run
         assertEquals(numSeats, ticketServiceWithSlowExpiration.numSeatsHeld(), "Seats should still be held");
         defaultVenue.printSeats();
     }
