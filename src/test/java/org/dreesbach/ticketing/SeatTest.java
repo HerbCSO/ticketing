@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SeatTest {
 
@@ -34,24 +33,26 @@ class SeatTest {
 
     @Test
     void goodnessForcedToBePositive() {
-        Throwable exception =
-                assertThrows(IllegalArgumentException.class, () -> new SeatImpl("test", -1), "Exception expected");
-        assertEquals("goodness should be a positive value", exception.getMessage(), "Wrong exception message");
+        TestUtil.testException(
+                IllegalArgumentException.class,
+                () -> new SeatImpl("test", -1),
+                "goodness should be a positive value"
+        );
     }
 
     @Test
     void idNotNull() {
-        Throwable exception =
-                assertThrows(NullPointerException.class, () -> new SeatImpl(null, 1), "Exception expected");
-        assertEquals("id should not be null", exception.getMessage(), "Wrong exception message");
-
+        TestUtil.testException(
+                NullPointerException.class,
+                () -> new SeatImpl(null, 1),
+                "id should not be null"
+        );
     }
 
     @Test
     void hold() {
         seat.hold();
-        assertAll(
-                "check conditions",
+        assertAll("check conditions",
                 () -> assertEquals(false, seat.isAvailable(), "Holding a seat should make it unavailable"),
                 () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
         );
@@ -60,14 +61,12 @@ class SeatTest {
     @Test
     void cancelHold() {
         seat.hold();
-        assertAll(
-                "ensure hold",
+        assertAll("ensure hold",
                 () -> assertEquals(false, seat.isAvailable(), "Make sure seat got held"),
                 () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
         );
         seat.cancelHold();
-        assertAll(
-                "check cancellation",
+        assertAll("check cancellation",
                 () -> assertEquals(true, seat.isAvailable(), "Releasing an unreserved seat should work"),
                 () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
         );
@@ -75,15 +74,21 @@ class SeatTest {
 
     @Test
     void cancelHoldOnUnheldSeat() {
-        Throwable exception = assertThrows(IllegalStateException.class, () -> seat.cancelHold());
-        assertEquals("Seat was already available", exception.getMessage(), "Different exception message than expected");
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> seat.cancelHold(),
+                "Seat was already available"
+        );
     }
 
     @Test
     void holdAlreadyHeldSeat() {
         seat.hold();
-        Throwable exception = assertThrows(IllegalStateException.class, () -> seat.hold());
-        assertEquals("Cannot hold an unavailable seat", exception.getMessage(), "Different exception message than expected");
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> seat.hold(),
+                "Cannot hold an unavailable seat"
+        );
     }
 
     @Test
@@ -91,8 +96,7 @@ class SeatTest {
         seat.hold();
         assertEquals(false, seat.isAvailable(), "Make sure seat got held");
         seat.cancelHold();
-        assertAll(
-                "check conditions",
+        assertAll("check conditions",
                 () -> assertEquals(true, seat.isAvailable(), "A released seat should be available for reservation again"),
                 () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
         );
@@ -102,8 +106,7 @@ class SeatTest {
     void reserve() {
         seat.hold(); // have to hold before reserving
         seat.reserve();
-        assertAll(
-                "check conditions",
+        assertAll("check conditions",
                 () -> assertEquals(false, seat.isAvailable(), "Reserving a seat should also make it unavailable"),
                 () -> assertEquals(true, seat.isReserved(), "Reserving a seat should mark it as such")
         );
@@ -111,22 +114,23 @@ class SeatTest {
 
     @Test
     void reserveUnheldSeat() {
-        Throwable exception = assertThrows(IllegalStateException.class, () -> seat.reserve());
-        assertEquals("Seat was still marked as available", exception.getMessage(), "Different exception message than expected");
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> seat.reserve(),
+                "Seat was still marked as available"
+        );
     }
 
     @Test
     void releaseReservedSeat() {
         seat.hold(); // have to hold before reserving
         seat.reserve();
-        assertAll(
-                "before cancellation",
+        assertAll("before cancellation",
                 () -> assertEquals(false, seat.isAvailable(), "Make sure seat got held"),
                 () -> assertEquals(true, seat.isReserved(), "Make sure seat got reserved")
         );
         seat.cancelReservation();
-        assertAll(
-                "after cancellation",
+        assertAll("after cancellation",
                 () -> assertEquals(true, seat.isAvailable(), "A released seat should be available for reservation again"),
                 () -> assertEquals(false, seat.isReserved(), "Seat should not be reserved")
         );
@@ -134,46 +138,60 @@ class SeatTest {
 
     @Test
     void cancelReservationOnUnreservedSeat() {
-        Throwable exception = assertThrows(IllegalStateException.class, () -> seat.cancelReservation());
-        assertEquals("Seat was still marked as available", exception.getMessage(), "Different exception message than expected");
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> seat.cancelReservation(),
+                "Seat was still marked as available"
+        );
     }
 
     @Test
     void reserveAlreadyReservedSeat() {
         seat.hold();
         seat.reserve();
-        Throwable exception = assertThrows(IllegalStateException.class, () -> seat.reserve());
-        assertEquals("Seat was already reserved", exception.getMessage(), "Different exception message than expected");
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> seat.reserve(),
+                "Seat was already reserved"
+        );
     }
 
     @Test
     void releaseUnHeldSeat() {
-        Throwable exception = assertThrows(IllegalStateException.class, () -> seat.cancelHold());
-        assertEquals("Seat was already available", exception.getMessage(), "Different exception message than expected");
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> seat.cancelHold(),
+                "Seat was already available"
+        );
     }
 
     @Test
     void releaseUnHeldReservedSeat() {
         seat.hold();
         seat.reserve();
-        Throwable exception = assertThrows(IllegalStateException.class, () -> seat.cancelHold());
-        assertEquals(
-                "Cannot cancel a hold on an already-reserved seat",
-                exception.getMessage(),
-                "Different exception message than expected"
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> seat.cancelHold(),
+                "Cannot cancel a hold on an already-reserved seat"
         );
     }
 
     @Test
     void releaseUnReservedSeat() {
-        Throwable exception = assertThrows(IllegalStateException.class, () -> seat.cancelReservation());
-        assertEquals("Seat was still marked as available", exception.getMessage(), "Different exception message than expected");
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> seat.cancelReservation(),
+                "Seat was still marked as available"
+        );
     }
 
     @Test
     void releaseUnReservedButHeldSeat() {
         seat.hold();
-        Throwable exception = assertThrows(IllegalStateException.class, () -> seat.cancelReservation());
-        assertEquals("Seat was not reserved", exception.getMessage(), "Different exception message than expected");
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> seat.cancelReservation(),
+                "Seat was not reserved"
+        );
     }
 }

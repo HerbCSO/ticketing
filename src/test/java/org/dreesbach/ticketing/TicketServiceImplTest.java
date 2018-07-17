@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TicketServiceImplTest {
@@ -50,11 +49,11 @@ class TicketServiceImplTest {
 
     @Test
     void tooShortEmail() {
-        Throwable exception = assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> ticketService.findAndHoldSeats(2, "a"),
-                "Expected exception"
+                "C'mon, you think [a] is an email address!? ;]"
         );
-        assertEquals("C'mon, you think [a] is an email address!? ;]", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
@@ -103,20 +102,20 @@ class TicketServiceImplTest {
 
     @Test
     void holdZeroSeatsThrowsException() {
-        Throwable exception = assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> ticketService.findAndHoldSeats(0, CUSTOMER_EMAIL),
-                "Exception expected"
+                "numSeatsToHold must be > 0"
         );
-        assertEquals("numSeatsToHold must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
     void negativeSeatHoldExpirationTimeThrowsException() {
-        Throwable exception = assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> new TicketServiceImpl(defaultVenue, Duration.ofSeconds(-1), Duration.ZERO),
-                "Exception expected"
+                "seatHoldCheckExpiration must be > 0"
         );
-        assertEquals("seatHoldCheckExpiration must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     /**
@@ -159,13 +158,16 @@ class TicketServiceImplTest {
 
     @Test
     void reserveUnheldSeat() {
-        Throwable exception = assertThrows(IllegalArgumentException.class, () -> ticketService.reserveSeats(0, "test"));
-        assertEquals("seatHoldId must be > 0", exception.getMessage(), "Exception message didn't match expectation");
+        TestUtil.testException(
+                IllegalArgumentException.class,
+                () -> ticketService.reserveSeats(0, "test"),
+                "seatHoldId must be > 0"
+        );
         int id = IdGenerator.generateUniqueIntId();
-        exception = assertThrows(IllegalStateException.class, () -> ticketService.reserveSeats(id, "test"));
-        assertEquals("SeatHold ID [" + id + "] not found",
-                exception.getMessage(),
-                "Exception message didn't match " + "expectation"
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> ticketService.reserveSeats(id, "test"),
+                "SeatHold ID [" + id + "] not found"
         );
         IdGenerator.retireId(id);
     }
@@ -191,11 +193,11 @@ class TicketServiceImplTest {
         SeatHold seatHold = ticketServiceWithImmediateExpiration.findAndHoldSeats(2, CUSTOMER_EMAIL);
         assertTrue(seatHold.expired(), "SeatHold should expire immediately");
         Thread.sleep(WAIT_FOR_EXPIRATION_IN_MS); // Ensure that the #expireSeatHolds method has had time to run
-        Throwable exception = assertThrows(IllegalStateException.class,
+        TestUtil.testException(
+                IllegalStateException.class,
                 () -> ticketServiceWithImmediateExpiration.reserveSeats(seatHold.getId(), CUSTOMER_EMAIL),
-                "Expected exception"
+                "SeatHold ID [" + seatHold.getId() + "] not found"
         );
-        assertEquals("SeatHold ID [" + seatHold.getId() + "] not found", exception.getMessage(), "Wrong exception message");
     }
 
     @Test

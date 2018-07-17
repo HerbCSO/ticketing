@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +14,6 @@ import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SeatHoldTest {
@@ -46,9 +44,11 @@ class SeatHoldTest {
 
     @Test
     void testHoldingNegativeSeats() {
-        Throwable exception =
-                assertThrows(IllegalArgumentException.class, () -> venue.holdSeats(-1, Duration.ZERO), "Exception expected");
-        assertEquals("numSeatsToHold must be > 0", exception.getMessage(), "Wrong exception message");
+        TestUtil.testException(
+                IllegalArgumentException.class,
+                () -> venue.holdSeats(-1, Duration.ZERO),
+                "numSeatsToHold must be > 0"
+        );
     }
 
     @Test

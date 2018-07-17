@@ -34,38 +34,38 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
 
     @Test
     void checkNegativeRowNumberThrowsException() {
-        Throwable exception = assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> new RectangularVenue(-1, 0, seatPickingStrategy),
-                "Expected negative row number to throw exception"
+                "Number of rows must be > 0"
         );
-        assertEquals("Number of rows must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
     void checkZeroRowNumberThrowsException() {
-        Throwable exception = assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> new RectangularVenue(0, 0, seatPickingStrategy),
-                "Expected zero row number to throw exception"
+                "Number of rows must be > 0"
         );
-        assertEquals("Number of rows must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
     void checkNegativeColumnNumberThrowsException() {
-        Throwable exception = assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> new RectangularVenue(1, -1, seatPickingStrategy),
-                "Expected negative column number to throw exception"
+                "Number of seats per row must be > 0"
         );
-        assertEquals("Number of seats per row must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
     void checkZeroColumnNumberThrowsException() {
-        Throwable exception = assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> new RectangularVenue(1, 0, seatPickingStrategy),
-                "Expected zero column number to throw exception"
+                "Number of seats per row must be > 0"
         );
-        assertEquals("Number of seats per row must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
@@ -86,11 +86,10 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
 
     @Test
     void pickNegativeNumberOfSeatsThrowsException() {
-        Throwable exception =
-                assertThrows(IllegalArgumentException.class, () -> seatPickingStrategy.pickBestAvailableSeats(venue, -1));
-        assertEquals(exception.getMessage(),
-                "Number of seats to pick must be greater than 0",
-                "Excpetion message didn't match"
+        TestUtil.testException(
+                IllegalArgumentException.class,
+                () -> seatPickingStrategy.pickBestAvailableSeats(venue, -1),
+                "Number of seats to pick must be greater than 0"
         );
     }
 
@@ -203,35 +202,39 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
 
     @Test
     void badGoodnessRow() {
-        assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> venue.getGoodness(-1, 0),
-                "Expected negative row number to throw exception"
+                "row must be between 0 and 2 (inclusive)"
         );
-        assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> venue.getGoodness(1_000_000, 0),
-                "Expected too large row number to throw exception"
+                "row must be between 0 and 2 (inclusive)"
         );
     }
 
     @Test
     void badGoodnessCol() {
-        assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> venue.getGoodness(0, -1),
-                "Expected negative column number to throw exception"
+                "col must be between 0 and 2 (inclusive)"
         );
-        assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> venue.getGoodness(0, 1_000_000),
-                "Expected too large column number to throw exception"
+                "col must be between 0 and 2 (inclusive)"
         );
     }
 
     @Test
     void holdNegativeNumberOfSeatsThrowsException() {
-        Throwable exception = assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> venue.holdSeats(-1, Duration.ZERO),
-                "Expected exception " + "thrown"
+                "numSeatsToHold must be > 0"
         );
-        assertEquals("numSeatsToHold must be > 0", exception.getMessage(), "Wrong exception message");
     }
 
     @Test
@@ -271,11 +274,10 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
 
     @Test
     void reservationCodeLength() {
-        Throwable exception =
-                assertThrows(IllegalArgumentException.class, () -> venue.cancelReservation("BAD"), "Expected exception thrown");
-        assertEquals("Expected a " + IdGenerator.MAX_RESERVATION_CODE_LENGTH + "-character reservation code",
-                exception.getMessage(),
-                "Wrong exception message"
+        TestUtil.testException(
+                IllegalArgumentException.class,
+                () -> venue.cancelReservation("BAD"),
+                "Expected a " + IdGenerator.MAX_RESERVATION_CODE_LENGTH + "-character reservation code"
         );
     }
 
@@ -286,9 +288,10 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
         String reservationCode = venue.reserve(seatHold);
         venue.cancelReservation(reservationCode);
         assertEquals(venue.getTotalNumSeats(), venue.getAvailableNumSeats(), "All seats should be available again");
-        assertThrows(IllegalArgumentException.class,
+        TestUtil.testException(
+                IllegalArgumentException.class,
                 () -> venue.cancelReservation(reservationCode),
-                "Venue should no longer know about this reservation code"
+                "Reservation code " + reservationCode + " not found"
         );
     }
 
@@ -305,10 +308,10 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     @Test
     void seatListOnlyPopulatedOnce() {
         venue.populateSeatList();
-        Throwable exception = assertThrows(IllegalStateException.class,
+        TestUtil.testException(
+                IllegalStateException.class,
                 () -> venue.populateSeatList(),
-                "Seat list should only be populated once"
+                "seatList was already populated"
         );
-        assertEquals("seatList was already populated", exception.getMessage(), "Wrong exception message");
     }
 }
