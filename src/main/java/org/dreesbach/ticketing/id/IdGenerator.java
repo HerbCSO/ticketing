@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -63,8 +64,10 @@ public final class IdGenerator {
     public static int generateUniqueIntId() {
         reseedRng();
         int randomNum = rng.nextInt(Integer.MAX_VALUE);
-        while (!IDS_IN_USE.add(randomNum)) {
-            randomNum = rng.nextInt(Integer.MAX_VALUE);
+        synchronized (IDS_IN_USE) {
+            while (!IDS_IN_USE.add(randomNum)) {
+                randomNum = rng.nextInt(Integer.MAX_VALUE);
+            }
         }
         return randomNum;
     }
@@ -77,8 +80,10 @@ public final class IdGenerator {
     public static String generateReservationCode() {
         reseedRng();
         String reservationCode = internalGenerateReservationCode();
-        while (!RESERVATION_IDS_IN_USE.add(reservationCode)) {
-            reservationCode = internalGenerateReservationCode();
+        synchronized (RESERVATION_IDS_IN_USE) {
+            while (!RESERVATION_IDS_IN_USE.add(reservationCode)) {
+                reservationCode = internalGenerateReservationCode();
+            }
         }
         return reservationCode;
     }
@@ -98,7 +103,10 @@ public final class IdGenerator {
         byte[] bytes = new byte[MAX_RESERVATION_CODE_LENGTH + 1];
         rng.nextBytes(bytes);
         BigInteger bigInteger = new BigInteger(bytes).abs();
-        return bigInteger.toString(Character.MAX_RADIX).toUpperCase().substring(0, MAX_RESERVATION_CODE_LENGTH);
+        return bigInteger
+                .toString(Character.MAX_RADIX)
+                .toUpperCase(Locale.getDefault())
+                .substring(0, MAX_RESERVATION_CODE_LENGTH);
     }
 
     /**
@@ -128,7 +136,9 @@ public final class IdGenerator {
      * @return {@code true} if ID was in use, {@code false} otherwise
      */
     public static boolean retireId(final int id) {
-        return IDS_IN_USE.remove(id);
+        synchronized (IDS_IN_USE) {
+            return IDS_IN_USE.remove(id);
+        }
     }
 
     /**
@@ -140,7 +150,9 @@ public final class IdGenerator {
      * @return {@code true} if ID was in use, {@code false} otherwise
      */
     public static boolean retireReservationId(final String id) {
-        return RESERVATION_IDS_IN_USE.remove(id);
+        synchronized (RESERVATION_IDS_IN_USE) {
+            return RESERVATION_IDS_IN_USE.remove(id);
+        }
     }
 
     /**
