@@ -126,7 +126,9 @@ public final class IdGenerator {
      * @return number of unique reservation IDs in use
      */
     public static int numUniqueReservationIds() {
-        return RESERVATION_IDS_IN_USE.size();
+        synchronized (RESERVATION_IDS_IN_USE) {
+            return RESERVATION_IDS_IN_USE.size();
+        }
     }
 
     /**
