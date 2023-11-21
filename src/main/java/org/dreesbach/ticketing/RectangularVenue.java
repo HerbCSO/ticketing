@@ -37,7 +37,7 @@ final class RectangularVenue implements Venue {
     /**
      * The seat picking strategy to use.
      */
-    private SeatPickingStrategy seatPickingStrategy;
+    private SeatPickingStrategy<RectangularVenue> seatPickingStrategy;
     /**
      * Keeps track of reserved seats. This is not strictly necessary in the scope of the problem statement (there is nothing in
      * the {@link TicketService} interface that requires being able to retrieve a reservation based on the reservation code),
@@ -104,7 +104,7 @@ final class RectangularVenue implements Venue {
     }
 
     /**
-     * The "goodness" score of the row overall. Ranges from 1 to {@ref numRows}.
+     * The "goodness" score of the row overall. Ranges from 1 to {@link numRows}.
      *
      * @param row row number of the seat, from 1 to n
      * @return the "goodness" score - relative to the size of the venue, the lower the better, minimum of 0
@@ -115,7 +115,7 @@ final class RectangularVenue implements Venue {
     }
 
     /**
-     * The "goodness" score of the column. Ranges from 1 to {@ref numRows}.
+     * The "goodness" score of the column. Ranges from 1 to {@link numRows}.
      *
      * @param col column number of the seat, from 0 to seatsPerRow / 2
      * @return the "goodness" score - relative to the size of the venue, the lower the better, minimum of 0
@@ -150,6 +150,7 @@ final class RectangularVenue implements Venue {
      * @param seatHoldExpirationTime time until the SeatHold expires
      * @return the actual number of seats that could be held - could be less than what was requested, all the way down to 0
      */
+    @Override
     public synchronized SeatHold holdSeats(final int numSeatsToHold, final Duration seatHoldExpirationTime) {
         checkArgument(numSeatsToHold > 0, "numSeatsToHold must be > 0");
         List<Seat> bestSeats = seatPickingStrategy.pickBestAvailableSeats(this, numSeatsToHold);
@@ -165,8 +166,9 @@ final class RectangularVenue implements Venue {
     }
 
     @Override
-    public void setSeatPickingStrategy(final SeatPickingStrategy seatPickingStrategy) {
-        this.seatPickingStrategy = checkNotNull(seatPickingStrategy);
+    @SuppressWarnings("unchecked")
+    public void setSeatPickingStrategy(final SeatPickingStrategy<? extends Venue> seatPickingStrategy) {
+        this.seatPickingStrategy = (SeatPickingStrategy<RectangularVenue>) checkNotNull(seatPickingStrategy);
     }
 
     @Override

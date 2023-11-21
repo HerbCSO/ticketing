@@ -71,7 +71,7 @@ class SeatHold {
     /**
      * Get the actual seats held by this.
      *
-     * @return a list of @{link Seat}s
+     * @return a list of {@link Seat}s
      */
     public List<Seat> getSeatsHeld() {
         return ImmutableList.copyOf(seatsHeld);

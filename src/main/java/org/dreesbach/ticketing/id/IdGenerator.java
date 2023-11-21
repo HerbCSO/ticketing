@@ -21,7 +21,7 @@ public final class IdGenerator {
      */
     public static final int MAX_RESERVATION_CODE_LENGTH = 6;
     /**
-     * Max number of calls to the {@ref rng} to allow before re-seeding it.
+     * Max number of calls to the {@link rng} to allow before re-seeding it.
      */
     private static final int MAX_CALL_COUNT_BEFORE_RESET = 10_000;
     /**
@@ -29,7 +29,7 @@ public final class IdGenerator {
      */
     private static SecureRandom rng = new SecureRandom();
     /**
-     * Keeps track of the number of times the {@ref rng} was called.
+     * Keeps track of the number of times the {@link rng} was called.
      */
     private static int callCounter = 0;
 
@@ -156,7 +156,7 @@ public final class IdGenerator {
     }
 
     /**
-     * Utility method to re-seed the {@ref rng}.
+     * Utility method to re-seed the {@link rng}.
      */
     private static void reseedRng() {
         if (callCounter % MAX_CALL_COUNT_BEFORE_RESET == 0) {

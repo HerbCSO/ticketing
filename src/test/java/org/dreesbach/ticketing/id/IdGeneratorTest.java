@@ -36,7 +36,7 @@ class IdGeneratorTest {
         long start = System.currentTimeMillis();
         int numIdsAtStart = IdGenerator.numUniqueIds();
         for (int i = 0; i < NUM_ID_GENERATION_ITERATIONS; i++) {
-            int id = IdGenerator.generateUniqueIntId();
+            IdGenerator.generateUniqueIntId();
         }
         assertAll("check postconditions",
                 // This is a little bit iffy given different system configurations, but given the implementation it should be
@@ -60,7 +60,7 @@ class IdGeneratorTest {
         long start = System.currentTimeMillis();
         int numIdsAtStart = IdGenerator.numUniqueReservationIds();
         for (int i = 0; i < NUM_ID_GENERATION_ITERATIONS; i++) {
-            String id = IdGenerator.generateReservationCode();
+            IdGenerator.generateReservationCode();
         }
         assertAll("check postconditions",
                 // See the comment in manyCallsShouldExecuteFast

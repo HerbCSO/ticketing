@@ -43,7 +43,7 @@ public interface Venue {
      *
      * @param seatPickingStrategy the strategy to use
      */
-    void setSeatPickingStrategy(SeatPickingStrategy seatPickingStrategy);
+    void setSeatPickingStrategy(SeatPickingStrategy<? extends Venue> seatPickingStrategy);
 
     /**
      * Reserve previously-held seat(s).

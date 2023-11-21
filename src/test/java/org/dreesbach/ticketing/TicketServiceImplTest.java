@@ -81,7 +81,7 @@ class TicketServiceImplTest {
     @Test
     void seatHoldReducesAvailableSeatCount() {
         int numSeatsToHold = 2;
-        SeatHold seatHold = ticketService.findAndHoldSeats(numSeatsToHold, CUSTOMER_EMAIL);
+        ticketService.findAndHoldSeats(numSeatsToHold, CUSTOMER_EMAIL);
         assertEquals(defaultVenue.getTotalNumSeats() - numSeatsToHold,
                 ticketService.numSeatsAvailable(),
                 "Seat holds should reduce number of available seats"
@@ -130,8 +130,8 @@ class TicketServiceImplTest {
      * purposes.
      *
      * @param numSeatsRequested number of seats to request for the test execution
-     * @param numSeatsExpected
-     * @param expectedNumSeatsAvailable
+     * @param numSeatsExpected number of seats that should be held
+     * @param expectedNumSeatsAvailable number of seats remaining expected to be available
      */
     @DisplayName("Multiple seat holds")
     @ParameterizedTest(name = "[{0}] requested seats should have held [{1}], now [{2}] seats available in venue")
