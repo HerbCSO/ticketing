@@ -2,7 +2,6 @@ package org.dreesbach.ticketing.id;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
@@ -24,6 +23,10 @@ public final class IdGenerator {
      * Max number of calls to the {@link rng} to allow before re-seeding it.
      */
     private static final int MAX_CALL_COUNT_BEFORE_RESET = 10_000;
+    /**
+     * Number of bytes to use when re-seeding the {@link rng}.
+     */
+    private static final int SEED_BYES = 20;
     /**
      * Random number generator for this class.
      */
@@ -164,7 +167,7 @@ public final class IdGenerator {
      */
     private static void reseedRng() {
         if (callCounter % MAX_CALL_COUNT_BEFORE_RESET == 0) {
-            rng.setSeed(Instant.now().getEpochSecond());
+            rng.setSeed(rng.generateSeed(SEED_BYES));
             callCounter = 0;
         }
     }
