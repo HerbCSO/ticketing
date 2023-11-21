@@ -299,7 +299,6 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
     void cancelledReservationIsAvailableForHoldAgain() {
         int numSeatsToReserve = 2;
         SeatHold seatHold = venue.holdSeats(numSeatsToReserve, Duration.ZERO);
-        List<Seat> heldSeats = seatHold.getSeatsHeld();
         String reservationCode = venue.reserve(seatHold);
         venue.cancelReservation(reservationCode);
         assertTrue(seatHold.getSeatsHeld().stream().allMatch(Seat::isAvailable), "Not all seats are available");

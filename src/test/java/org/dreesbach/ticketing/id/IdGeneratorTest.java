@@ -20,23 +20,23 @@ class IdGeneratorTest {
     private static final long MAX_ID_GENERATION_RUNTIME_IN_MS = 2_000L;
 
     @Test
-    public void generatesRandomId() {
+    void generatesRandomId() {
         assertThat("Random ID should be > 0", IdGenerator.generateUniqueIntId(), greaterThan(0));
     }
 
     @Test
-    public void multipleCallsGenerateDifferentIds() {
+    void multipleCallsGenerateDifferentIds() {
         int id1 = IdGenerator.generateUniqueIntId();
         int id2 = IdGenerator.generateUniqueIntId();
         assertNotEquals(id1, id2, "Random IDs should not be equal");
     }
 
     @Test
-    public void manyCallsShouldExecuteFast() {
+    void manyCallsShouldExecuteFast() {
         long start = System.currentTimeMillis();
         int numIdsAtStart = IdGenerator.numUniqueIds();
         for (int i = 0; i < NUM_ID_GENERATION_ITERATIONS; i++) {
-            int id = IdGenerator.generateUniqueIntId();
+            IdGenerator.generateUniqueIntId();
         }
         assertAll("check postconditions",
                 // This is a little bit iffy given different system configurations, but given the implementation it should be
@@ -45,7 +45,7 @@ class IdGeneratorTest {
                 // high-demand environments this will be used in.
                 () -> assertThat("Should run in under " + MAX_ID_GENERATION_RUNTIME_IN_MS
                                 + " ms - note: may vary per machine! If you have problems with this test sporadically "
-                                + "failing, come " + "talk to Carsten and we can find a better solution.",
+                                + "failing, come talk to Carsten and we can find a better solution.",
                         System.currentTimeMillis() - start,
                         lessThan(MAX_ID_GENERATION_RUNTIME_IN_MS)
                 ), () -> assertEquals(NUM_ID_GENERATION_ITERATIONS,
@@ -56,18 +56,17 @@ class IdGeneratorTest {
     }
 
     @Test
-    public void manyReservationIdCallsShouldExecuteFast() {
+    void manyReservationIdCallsShouldExecuteFast() {
         long start = System.currentTimeMillis();
         int numIdsAtStart = IdGenerator.numUniqueReservationIds();
         for (int i = 0; i < NUM_ID_GENERATION_ITERATIONS; i++) {
-            String id = IdGenerator.generateReservationCode();
+            IdGenerator.generateReservationCode();
         }
         assertAll("check postconditions",
                 // See the comment in manyCallsShouldExecuteFast
                 () -> assertThat("Should run in under " + MAX_ID_GENERATION_RUNTIME_IN_MS
                                 + " ms - note: may vary per machine! If you have problems with this test sporadically "
-                                + "failing, come "
-                                + "talk to Carsten and we can find a better solution.",
+                                + "failing, come talk to Carsten and we can find a better solution.",
                         System.currentTimeMillis() - start,
                         lessThan(MAX_ID_GENERATION_RUNTIME_IN_MS)
                 ), () -> assertEquals(NUM_ID_GENERATION_ITERATIONS,
@@ -78,24 +77,24 @@ class IdGeneratorTest {
     }
 
     @Test
-    public void removeUsedId() {
+    void removeUsedId() {
         int id = IdGenerator.generateUniqueIntId();
         assertTrue(IdGenerator.retireId(id), "Expected previously-generated ID to be in use");
     }
 
     @Test
-    public void removeUnusedId() {
+    void removeUnusedId() {
         assertFalse(IdGenerator.retireId(0), "IDs should start at 1 and 0 should never exist in the list of used IDs");
     }
 
     @Test
-    public void removeUsedReservationId() {
+    void removeUsedReservationId() {
         String id = IdGenerator.generateReservationCode();
         assertTrue(IdGenerator.retireReservationId(id), "Expected previously-generated ID to be in use");
     }
 
     @Test
-    public void removeUnusedReservationId() {
+    void removeUnusedReservationId() {
         assertFalse(
                 IdGenerator.retireReservationId("------"),
                 "IDs only have uppercase alphanumeric characters and this should never exist in the list of used IDs"
@@ -103,7 +102,7 @@ class IdGeneratorTest {
     }
 
     @Test
-    public void testUniqueIntIdsGenerated() {
+    void testUniqueIntIdsGenerated() {
         Set<Integer> ids = new HashSet<>();
         for (int i = 0; i < NUM_ID_GENERATION_ITERATIONS; i++) {
             assertTrue(ids.add(IdGenerator.generateUniqueIntId()), "Only unique IDs expected");
@@ -111,7 +110,7 @@ class IdGeneratorTest {
     }
 
     @Test
-    public void testUniqueReservationIdsGenerated() {
+    void testUniqueReservationIdsGenerated() {
         Set<String> ids = new HashSet<>();
         for (int i = 0; i < NUM_ID_GENERATION_ITERATIONS; i++) {
             assertTrue(ids.add(IdGenerator.generateReservationCode()), "Only unique IDs expected");
