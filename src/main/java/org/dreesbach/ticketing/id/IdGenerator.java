@@ -115,7 +115,9 @@ public final class IdGenerator {
      * @return number of unique IDs in use
      */
     public static int numUniqueIds() {
-        return IDS_IN_USE.size();
+        synchronized (IDS_IN_USE) {
+            return IDS_IN_USE.size();
+        }
     }
 
     /**

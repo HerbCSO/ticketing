@@ -45,7 +45,7 @@ class IdGeneratorTest {
                 // high-demand environments this will be used in.
                 () -> assertThat("Should run in under " + MAX_ID_GENERATION_RUNTIME_IN_MS
                                 + " ms - note: may vary per machine! If you have problems with this test sporadically "
-                                + "failing, come " + "talk to Carsten and we can find a better solution.",
+                                + "failing, come talk to Carsten and we can find a better solution.",
                         System.currentTimeMillis() - start,
                         lessThan(MAX_ID_GENERATION_RUNTIME_IN_MS)
                 ), () -> assertEquals(NUM_ID_GENERATION_ITERATIONS,
@@ -66,8 +66,7 @@ class IdGeneratorTest {
                 // See the comment in manyCallsShouldExecuteFast
                 () -> assertThat("Should run in under " + MAX_ID_GENERATION_RUNTIME_IN_MS
                                 + " ms - note: may vary per machine! If you have problems with this test sporadically "
-                                + "failing, come "
-                                + "talk to Carsten and we can find a better solution.",
+                                + "failing, come talk to Carsten and we can find a better solution.",
                         System.currentTimeMillis() - start,
                         lessThan(MAX_ID_GENERATION_RUNTIME_IN_MS)
                 ), () -> assertEquals(NUM_ID_GENERATION_ITERATIONS,
