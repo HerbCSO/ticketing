@@ -241,7 +241,6 @@ final class RectangularVenue implements Venue {
                 }
                 if (seat.isHeld()) {
                     System.out.print("H ");
-                    continue;
                 }
             }
             System.out.println();
