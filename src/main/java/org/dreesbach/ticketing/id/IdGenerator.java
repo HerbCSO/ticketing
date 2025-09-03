@@ -65,9 +65,9 @@ public final class IdGenerator {
         reseedRng();
         int randomNum = rng.nextInt(Integer.MAX_VALUE);
         synchronized (IDS_IN_USE) {
-            while (!IDS_IN_USE.add(randomNum)) {
+            do {
                 randomNum = rng.nextInt(Integer.MAX_VALUE);
-            }
+            } while (randomNum == 0 || !IDS_IN_USE.add(randomNum));
         }
         return randomNum;
     }
