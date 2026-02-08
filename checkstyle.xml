@@ -96,7 +96,9 @@
         <!-- See http://checkstyle.sf.net/config_naming.html -->
         <module name="ConstantName"/>
         <module name="LocalFinalVariableName"/>
-        <module name="LocalVariableName"/>
+        <module name="LocalVariableName">
+            <property name="format" value="^(_|[a-z][a-zA-Z0-9]*)$"/>
+        </module>
         <module name="MemberName"/>
         <module name="MethodName"/>
         <module name="PackageName"/>
