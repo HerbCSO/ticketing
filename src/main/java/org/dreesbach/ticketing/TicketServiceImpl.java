@@ -80,7 +80,7 @@ public final class TicketServiceImpl implements TicketService {
         // throughput constant.
         seatHolds = Collections.synchronizedMap(new LinkedHashMap<>(venue.getTotalNumSeats()));
         // We don't want executions to pile up, so we use scheduleWithFixedDelay rather than scheduleAtFixedRate
-        var unused = seatHoldExpiration.scheduleWithFixedDelay(this::expireSeatHolds,
+        var _ = seatHoldExpiration.scheduleWithFixedDelay(this::expireSeatHolds,
                 0L,
                 seatHoldCheckExpiration.toMillis(),
                 TimeUnit.MILLISECONDS
