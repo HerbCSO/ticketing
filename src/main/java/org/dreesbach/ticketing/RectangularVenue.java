@@ -225,7 +225,9 @@ final class RectangularVenue implements Venue {
     @Override
     public void printSeats() {
         String header = " STAGE ";
-        int padding = (seatsPerRow * 2 - header.length()) / 2;
+        // Guard against small venues where the row is narrower than the header, which would otherwise produce a negative
+        // padding and blow up Collections.nCopies().
+        int padding = Math.max(0, (seatsPerRow * 2 - header.length()) / 2);
         System.out.println(String.join("", Collections.nCopies(padding, "-")) + " STAGE " + String.join("",
                 Collections.nCopies(padding, "-")
         ));

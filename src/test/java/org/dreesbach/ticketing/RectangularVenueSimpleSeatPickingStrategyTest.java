@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -17,6 +18,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -121,6 +123,16 @@ class RectangularVenueSimpleSeatPickingStrategyTest {
                         () -> venue.getYPosition(10),
                         "Too high a row number throws exception"
                 )
+        );
+    }
+
+    @DisplayName("printSeats on narrow venues")
+    @ParameterizedTest(name = "printSeats should not throw for a venue with [{0}] seat(s) per row")
+    @ValueSource(ints = { 1, 2, 3 })
+    void printSeatsHandlesNarrowVenues(int numSeatsPerRow) {
+        venue = new RectangularVenue(1, numSeatsPerRow, seatPickingStrategy);
+        assertDoesNotThrow(venue::printSeats,
+                "printSeats should not throw even when the row is narrower than the ' STAGE ' header"
         );
     }
 

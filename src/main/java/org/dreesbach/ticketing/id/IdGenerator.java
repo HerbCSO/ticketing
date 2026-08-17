@@ -21,9 +21,10 @@ public final class IdGenerator {
      */
     public static final int MAX_RESERVATION_CODE_LENGTH = 6;
     /**
-     * Max number of calls to the {@link rng} to allow before re-seeding it.
+     * Max number of calls to the {@link rng} to allow before re-seeding it. Package-private (rather than private) so tests
+     * can verify {@link callCounter} cycles correctly without duplicating this value.
      */
-    private static final int MAX_CALL_COUNT_BEFORE_RESET = 10_000;
+    static final int MAX_CALL_COUNT_BEFORE_RESET = 10_000;
     /**
      * Random number generator for this class.
      */
@@ -160,12 +161,25 @@ public final class IdGenerator {
     }
 
     /**
-     * Utility method to re-seed the {@link rng}.
+     * Utility method to re-seed the {@link rng} every {@value MAX_CALL_COUNT_BEFORE_RESET} calls.
+     * <p>
+     * Synchronized so that concurrent callers can't race on incrementing {@link callCounter}, which would otherwise let the
+     * threshold check pass multiple times (or not fire at all) under load.
      */
-    private static void reseedRng() {
-        if (callCounter % MAX_CALL_COUNT_BEFORE_RESET == 0) {
+    private static synchronized void reseedRng() {
+        callCounter++;
+        if (callCounter >= MAX_CALL_COUNT_BEFORE_RESET) {
             rng.setSeed(Instant.now().getEpochSecond());
             callCounter = 0;
         }
+    }
+
+    /**
+     * Test-only accessor for the current {@link callCounter} value.
+     *
+     * @return the number of calls since the {@link rng} was last re-seeded
+     */
+    static synchronized int getCallCounter() {
+        return callCounter;
     }
 }
