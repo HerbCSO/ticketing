@@ -44,12 +44,12 @@ public final class TicketServiceImpl implements TicketService {
     /**
      * List of all the seat holds.
      */
-    private Map<Integer, SeatHold> seatHolds;
+    private final Map<Integer, SeatHold> seatHolds;
     /**
      * An executor service to periodically go through existing {@link SeatHold}s and expire them if they have exceeded their
      * maximum lifetime.
      */
-    private ScheduledExecutorService seatHoldExpiration = new ScheduledThreadPoolExecutor(1);
+    private final ScheduledExecutorService seatHoldExpiration = new ScheduledThreadPoolExecutor(1);
 
     /**
      * Default constructor.

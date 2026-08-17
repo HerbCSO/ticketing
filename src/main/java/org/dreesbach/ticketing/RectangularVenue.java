@@ -90,12 +90,12 @@ final class RectangularVenue implements Venue {
 
     /**
      * Get the overall "goodness" score of the seat. The assumption here is that the closer to the front and the closer to the
-     * middle, the better the seat. In other words the "goodness" is maximum front row, center seat, and then decreases in
-     * concentric shells from there, with preference given to seats further forward.
+     * middle, the better the seat. In other words the "goodness" is minimum at the front row, center seat, and then increases
+     * in concentric shells from there, with preference given to seats further forward.
      *
      * @param row row number of the seat, from 0 to n
      * @param col column number of the seat, from 0 to n
-     * @return the "goodness" score - relative to the size of the venue, the higher the better, minimum of 1
+     * @return the "goodness" score - relative to the size of the venue, the lower the better, minimum of 0
      */
     double getGoodness(final int row, final int col) {
         checkArgument(row >= 0 && row < numRows, "row must be between %s and %s (inclusive)", 0, numRows - 1);
