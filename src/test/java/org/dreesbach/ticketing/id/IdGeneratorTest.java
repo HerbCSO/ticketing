@@ -102,6 +102,19 @@ class IdGeneratorTest {
     }
 
     @Test
+    void callCounterAdvancesAndWrapsOnEachCall() {
+        int before = IdGenerator.getCallCounter();
+        IdGenerator.generateUniqueIntId();
+        int after = IdGenerator.getCallCounter();
+        int expected = (before + 1) % IdGenerator.MAX_CALL_COUNT_BEFORE_RESET;
+        assertEquals(expected,
+                after,
+                "callCounter should advance by one on each call (wrapping to 0 at the reseed threshold) instead of "
+                        + "staying fixed"
+        );
+    }
+
+    @Test
     void testUniqueIntIdsGenerated() {
         Set<Integer> ids = new HashSet<>();
         for (int i = 0; i < NUM_ID_GENERATION_ITERATIONS; i++) {
