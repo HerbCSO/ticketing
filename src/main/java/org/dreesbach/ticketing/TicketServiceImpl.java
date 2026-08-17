@@ -1,5 +1,7 @@
 package org.dreesbach.ticketing;
 
+import org.dreesbach.ticketing.id.IdGenerator;
+
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
@@ -121,7 +123,7 @@ public final class TicketServiceImpl implements TicketService {
      * @throws IllegalStateException when a SeatHold is not found
      */
     @Override
-    public String reserveSeats(final int seatHoldId, final String customerEmail) {
+    public synchronized String reserveSeats(final int seatHoldId, final String customerEmail) {
         checkArgument(seatHoldId > 0, "seatHoldId must be > 0");
         checkEmailParam(customerEmail);
         SeatHold seatHold;
@@ -134,7 +136,13 @@ public final class TicketServiceImpl implements TicketService {
                 throw new IllegalStateException("SeatHold ID [" + seatHoldId + "] is expired");
             }
         }
-        return venue.reserve(seatHold);
+        String reservationCode = venue.reserve(seatHold);
+        // The SeatHold has now been consumed by a completed reservation - stop tracking it and retire its ID so we don't
+        // leak map entries / IDs for every successful reservation. We must not call seatHold.remove() here, since that
+        // would try to cancel the hold on seats that are now reserved rather than held.
+        seatHolds.remove(seatHoldId);
+        IdGenerator.retireId(seatHoldId);
+        return reservationCode;
     }
 
     /**

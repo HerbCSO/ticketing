@@ -16,6 +16,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,6 +29,11 @@ class TicketServiceImplTest {
     private static final int NUM_COLS = 3;
     private static final long WAIT_FOR_EXPIRATION_IN_MS = 100L;
     private static final Duration DEFAULT_SEAT_HOLD_CHECK_DURATION = Duration.ofMillis(1);
+    /**
+     * In {@link #stadiumSizedVenue()}, the tolerance for how many seat holds are allowed to expire before they could be
+     * reserved (e.g. due to slow test hardware), out of ~9,500 holds created.
+     */
+    private static final int MAX_ACCEPTABLE_UNRESERVED_HOLDS = 100;
     private static Venue persistentDefaultVenue;
     private static TicketService persistentTicketService;
     private Venue defaultVenue;
@@ -157,6 +163,26 @@ class TicketServiceImplTest {
     }
 
     @Test
+    void reserveSeatsStopsTrackingTheSeatHold() {
+        SeatHold seatHold = ticketService.findAndHoldSeats(2, CUSTOMER_EMAIL);
+        assertEquals(2,
+                ((TicketServiceImpl) ticketService).numSeatsHeld(),
+                "Held seats should be tracked as held prior to reservation"
+        );
+        ticketService.reserveSeats(seatHold.getId(), CUSTOMER_EMAIL);
+        assertEquals(0,
+                ((TicketServiceImpl) ticketService).numSeatsHeld(),
+                "Reserved seats should no longer be tracked as held once reserved"
+        );
+        // Reserving the same (now consumed) SeatHold ID again should fail cleanly instead of finding a stale entry.
+        TestUtil.testException(
+                IllegalStateException.class,
+                () -> ticketService.reserveSeats(seatHold.getId(), CUSTOMER_EMAIL),
+                "SeatHold ID [" + seatHold.getId() + "] not found"
+        );
+    }
+
+    @Test
     void reserveUnheldSeat() {
         TestUtil.testException(
                 IllegalArgumentException.class,
@@ -246,12 +272,17 @@ class TicketServiceImplTest {
                 System.out.println(counter + " SeatHolds reserved");
             }
         }
+        final int numReserved = counter;
         assertAll("check postconditions",
                 () -> assertEquals(0, venue.getAvailableNumSeats(), "Expcted 0 seats left"),
                 () -> assertEquals(0, localTicketService.numSeatsAvailable(), "Expected 0 seats available"),
-                () -> assertThat("Expected more than 1,000 seat holds to still not be expired",
+                () -> assertThat("Expected the vast majority of seat holds to have been reserved before they could expire",
+                        numReserved,
+                        greaterThanOrEqualTo(seatHolds.size() - MAX_ACCEPTABLE_UNRESERVED_HOLDS)
+                ),
+                () -> assertThat("Successfully reserved SeatHolds should no longer be tracked as held",
                         ((TicketServiceImpl) localTicketService).numSeatsHeld(),
-                        greaterThanOrEqualTo(1_000)
+                        lessThan(venue.getTotalNumSeats() / 10)
                 )
         );
     }
