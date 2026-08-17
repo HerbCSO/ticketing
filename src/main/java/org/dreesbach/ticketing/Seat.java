@@ -55,7 +55,7 @@ public interface Seat {
     /**
      * Return a measure of the seat's "goodness", i.e. how desirable the seat is.
      *
-     * @return an int that measures how good the seat is - higher number = better seat
+     * @return a value that measures how good the seat is - lower number = better seat
      */
     double seatGoodness();
 }
