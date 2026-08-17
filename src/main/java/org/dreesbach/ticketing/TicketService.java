@@ -3,7 +3,7 @@ package org.dreesbach.ticketing;
 /**
  * Provides an interface for reserving tickets in high-demand performance locations.
  */
-public interface TicketService {
+public interface TicketService extends AutoCloseable {
     /**
      * The number of seats in the venue that are neither held nor reserved.
      *
@@ -28,4 +28,14 @@ public interface TicketService {
      * @return a reservation confirmation code
      */
     String reserveSeats(int seatHoldId, String customerEmail);
+
+    /**
+     * Releases any resources held by this service (e.g. background threads used to expire seat holds). Once closed, a
+     * {@link TicketService} should no longer be used.
+     * <p>
+     * Overridden here (rather than inherited as-is from {@link AutoCloseable}) to declare no checked exception, since
+     * implementations aren't expected to need one.
+     */
+    @Override
+    void close();
 }
