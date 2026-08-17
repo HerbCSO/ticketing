@@ -40,7 +40,7 @@ public final class TicketServiceImpl implements TicketService {
      * <p>
      * Can be a simple rectangular arrangement, or more complex.
      */
-    private Venue venue;
+    private final Venue venue;
     /**
      * List of all the seat holds.
      */
