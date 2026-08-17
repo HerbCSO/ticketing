@@ -176,6 +176,23 @@ public final class TicketServiceImpl implements TicketService {
     }
 
     /**
+     * Shuts down the background thread that expires {@link SeatHold}s. Once closed, this instance should no longer be used.
+     */
+    @Override
+    public void close() {
+        seatHoldExpiration.shutdown();
+    }
+
+    /**
+     * Whether the background seat hold expiration thread has been shut down.
+     *
+     * @return {@code true} if {@link close()} has been called
+     */
+    boolean isClosed() {
+        return seatHoldExpiration.isShutdown();
+    }
+
+    /**
      * Removes expired {@link SeatHold}s.
      */
     private synchronized void expireSeatHolds() {
