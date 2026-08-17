@@ -5,4 +5,5 @@ name = "java"
 enabled = true
 
   [analyzers.meta]
-  runtime_version = "8"
+  # The project targets Java 24, but DeepSource's Java analyzer only supports OpenJDK 8-21, so this is capped at 21.
+  runtime_version = "21"

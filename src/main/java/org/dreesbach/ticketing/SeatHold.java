@@ -15,8 +15,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Class to coordinate holding of seats prior to actually reserving.
  */
 class SeatHold {
-    /** How long the seat hold is kept before expiring. */
-    private static final Duration SEAT_HOLD_EXPIRATION_TIME = Duration.ofMinutes(5);
     /** The expiration time of this {@code SeatHold}. */
     private Instant expirationTime;
     /** Number of seats to hold for reservation. */
@@ -25,17 +23,6 @@ class SeatHold {
     private int id;
     /** List of seats held. */
     private List<Seat> seatsHeld = new ArrayList<>();
-
-    /**
-     * Create a new SeatHold.
-     *
-     * Will auto-generate an ID.
-     *
-     * @param seatsToHold list of seats to hold
-     */
-    SeatHold(final List<Seat> seatsToHold) {
-        this(seatsToHold, SEAT_HOLD_EXPIRATION_TIME);
-    }
 
     /**
      * Create a new SeatHold with the specified expiration time.

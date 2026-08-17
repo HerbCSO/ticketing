@@ -104,9 +104,10 @@ final class RectangularVenue implements Venue {
     }
 
     /**
-     * The "goodness" score of the row overall. Ranges from 1 to {@link numRows}.
+     * The "goodness" score contribution of the row. Ranges from 0 (best, front row) to {@code numRows - 1} (worst, back
+     * row).
      *
-     * @param row row number of the seat, from 1 to n
+     * @param row row number of the seat, from 0 to {@code numRows - 1} (inclusive)
      * @return the "goodness" score - relative to the size of the venue, the lower the better, minimum of 0
      */
     double getYPosition(final int row) {
@@ -115,10 +116,11 @@ final class RectangularVenue implements Venue {
     }
 
     /**
-     * The "goodness" score of the column. Ranges from 1 to {@link numRows}.
+     * The "goodness" score contribution of the column. Ranges from {@code -(seatsPerRow - 1) / 2} (rightmost seat) to
+     * {@code (seatsPerRow - 1) / 2} (leftmost seat), with seats closer to the center scoring closer to 0.
      *
-     * @param col column number of the seat, from 0 to seatsPerRow / 2
-     * @return the "goodness" score - relative to the size of the venue, the lower the better, minimum of 0
+     * @param col column number of the seat, from 0 to {@code seatsPerRow - 1} (inclusive)
+     * @return the "goodness" score - relative to the size of the venue, the closer to 0 the better
      */
     double getXPosition(final int col) {
         checkArgument(col >= 0 && col < seatsPerRow, "col must be between %s and %s (inclusive)", 0, seatsPerRow - 1);

@@ -21,6 +21,7 @@ class SeatHoldTest {
     private static final List<Seat> SEATS_TO_HOLD = Arrays.asList(new SeatImpl[]{
             new SeatImpl("seat1", 1.0), new SeatImpl("seat2", 2.0)
     });
+    private static final Duration ARBITRARY_EXPIRATION_TIME = Duration.ofMinutes(5);
     private RectangularVenue venue;
 
     @BeforeEach
@@ -32,13 +33,13 @@ class SeatHoldTest {
     @Test
     void getNumSeats() {
         int numSeatsToRequest = 2;
-        SeatHold seatHold = new SeatHold(SEATS_TO_HOLD);
+        SeatHold seatHold = new SeatHold(SEATS_TO_HOLD, ARBITRARY_EXPIRATION_TIME);
         assertEquals(numSeatsToRequest, seatHold.getNumSeatsHeld(), "Number of seats held should equal requested seats");
     }
 
     @Test
     void testHoldingZeroSeats() {
-        SeatHold seatHold = new SeatHold(Collections.emptyList());
+        SeatHold seatHold = new SeatHold(Collections.emptyList(), ARBITRARY_EXPIRATION_TIME);
         assertEquals(0, seatHold.getNumSeatsRequested(), "Number of seats held should equal requested seats (0)");
     }
 
@@ -53,7 +54,7 @@ class SeatHoldTest {
 
     @Test
     void requestMoreSeatsThanAvailable() {
-        SeatHold seatHold = new SeatHold(venue.getSeats());
+        SeatHold seatHold = new SeatHold(venue.getSeats(), ARBITRARY_EXPIRATION_TIME);
         assertEquals(
                 venue.getTotalNumSeats(),
                 seatHold.getNumSeatsHeld(),
